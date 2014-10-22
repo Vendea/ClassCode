@@ -1,0 +1,30 @@
+﻿Fixed errors
+# Please enter the commit message for your changes. Lines starting
+# with '#' will be ignored, and an empty message aborts the commit.
+# On branch master
+# Your branch is up-to-date with 'origin/master'.
+#
+# Changes to be committed:
+#	new file:   Discrete1and2/bin/.gitignore
+#	modified:   Discrete1and2/bin/ds1/Game$DSGameNode.class
+#	modified:   Discrete1and2/bin/ds1/Game.class
+#	modified:   Discrete1and2/bin/ds1/Nim.class
+#	modified:   Discrete1and2/bin/ds1/NimCopy.class
+#	modified:   Discrete1and2/bin/ds1/TicTacToe.class
+#	modified:   Discrete1and2/bin/ds1Server/GameClient$ClientSocketThread.class
+#	modified:   Discrete1and2/bin/ds1Server/GameClient.class
+#	modified:   Discrete1and2/bin/otherstuff/Blank.class
+#	modified:   Discrete1and2/bin/otherstuff/Demo.class
+#	modified:   Discrete1and2/bin/otherstuff/Demo2.class
+#	modified:   Discrete1and2/bin/otherstuff/Hangman$1.class
+#	modified:   Discrete1and2/bin/otherstuff/Hangman.class
+#	modified:   Discrete1and2/bin/otherstuff/HashMapDemo.class
+#	modified:   Discrete1and2/src/ds1/Game.java
+#	modified:   Discrete1and2/src/otherstuff/Demo.java
+#
+# Untracked files:
+#	CompGeo/bin/.gitignore
+#	Katherine/.gitignore
+#	ProgrammingTeam/progteam/.gitignore
+#
+
