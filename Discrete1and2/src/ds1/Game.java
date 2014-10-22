@@ -42,7 +42,7 @@ public abstract class Game{
 	public abstract void computerPlaySelf();
 	public abstract void play();
 
-	class DSGameNode<E> extends DSNode<E>{
+	public class DSGameNode<E> extends DSNode<E>{
 		int whoWins;
 		public DSGameNode(E theThing, DSGameNode<E> p){
 			super(theThing, p);

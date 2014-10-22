@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.FileReader;
 import java.io.IOException;
 
-import ds1.Battleship;
+import ds1.BattleshipMine;
 import ds1.Game.DSGameNode;
 
 @SuppressWarnings("unused")
@@ -19,7 +19,7 @@ public class Demo{
 		//BattleshipGUI b = new BattleshipGUI();
 		//TicTacToeGUI t = new TicTacToeGUI();
 		//BattleshipMine g = new BattleshipMine();
-		Battleship g = new Battleship();
+		BattleshipMine g = new BattleshipMine();
 
 		/*DSNode<Integer> root = new DSNode<Integer>(6, null);
 		DSNode<Integer> a, b, c, d, e, f, g, h, i;
