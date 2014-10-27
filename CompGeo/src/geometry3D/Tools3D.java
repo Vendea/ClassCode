@@ -62,7 +62,7 @@ public class Tools3D {
 				return "Shaves";
 			}
 		}
-		else if(deA == das && deB == dbs && deC == dcs){
+		else if(deA < das && deB < dbs && deC < dcs){
 			return "Pierces";
 		}
 		else
