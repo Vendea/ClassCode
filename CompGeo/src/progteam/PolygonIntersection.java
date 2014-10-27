@@ -114,7 +114,11 @@ public class PolygonIntersection{
 			rval[i] = temp.get(i);
 		if(rval.length < 2)
 			return rval;
-		Arrays.sort(rval, new SortbyXthenY());
+		Arrays.sort(rval, new Comparator<Point2D>() {
+			public int compare(Point2D a, Point2D b) {
+				return (a.getX() < b.getX()) ? -1 : (a.getX() > b.getX()) ?
+						1 : (a.getY() < b.getY()) ? -1 : (a.getY() > b.getY()) ? 1 : 0;
+			}});
 		return rval;
 	}
 	
