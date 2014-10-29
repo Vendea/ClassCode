@@ -47,6 +47,10 @@ public class Plane3D {
 		this.inP = inP;
 		
 	}
+	
+	public Plane3D(LineSeg3D l1, LineSeg3D l2, Point3D... point3ds){
+		
+	}
 	public boolean contains(Point3D p){
 			return 0 == this.normal.z*(p.z - this.inP.z)+this.normal.y*(p.y - this.inP.y)+this.normal.x*(p.x - this.inP.x);
 	}
