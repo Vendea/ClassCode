@@ -1,16 +1,16 @@
-package geometry3D;
+package geo;
 
 
-public class Point3D {
+public class ClassPoint3D {
    double x, y, z;        
    
-   public Point3D(double xx, double yy, double zz){
+   public ClassPoint3D(double xx, double yy, double zz){
        x = xx;
        y = yy;
        z = zz;
    }
    
-   public Point3D(double[] coords){
+   public ClassPoint3D(double[] coords){
        x = coords[0];
        y = coords[1];
        z = coords[2];
@@ -25,12 +25,12 @@ public class Point3D {
        return rv;
    }
    
-   public Point3D add(Point3D p){
-       return new Point3D(x + p.x, y + p.y, z + p.z);
+   public ClassPoint3D add(ClassPoint3D p){
+       return new ClassPoint3D(x + p.x, y + p.y, z + p.z);
    }
    
-   public Point3D multAndAdd(double factor, Point3D p){
-       return new Point3D(x + factor*p.x, y + factor*p.y, z + factor*p.z);
+   public ClassPoint3D multAndAdd(double factor, ClassPoint3D p){
+       return new ClassPoint3D(x + factor*p.x, y + factor*p.y, z + factor*p.z);
    }
    
    public String toString(){

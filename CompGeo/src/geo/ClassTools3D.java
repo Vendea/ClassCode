@@ -1,4 +1,4 @@
-package geometry3D;
+package geo;
 
 import java.util.Scanner;
 
@@ -19,11 +19,11 @@ public class ClassTools3D {
         // *  N lines of six ints each, the endpoints (p,q,r),(s,t,u) of the segments
         // For each segment it says whether it pierces, shaves, nicks or misses the triangle
         Scanner scanner = new Scanner(System.in);
-        Triangle3D t = readTriangle(scanner);
+        ClassTriangle3D t = readTriangle(scanner);
         int N     = scanner.nextInt();
         for(int j = 0; j < N; j++){
-            Point3D p1 = readPoint(scanner);
-            Point3D p2 = readPoint(scanner);
+            ClassPoint3D p1 = readPoint(scanner);
+            ClassPoint3D p2 = readPoint(scanner);
             System.out.println(segTriIntersection(t, p1, p2));
         }
     }
@@ -39,7 +39,7 @@ public class ClassTools3D {
      *                 "Nicks" means that the segment intersects a vertex of the triangle
      *                 "Misses" means it misses.
      */
-    public static String segTriIntersection(Triangle3D t, Point3D A, Point3D B){
+    public static String segTriIntersection(ClassTriangle3D t, ClassPoint3D A, ClassPoint3D B){
         // Your code here
         return "Your code here";        
     }
@@ -50,14 +50,14 @@ public class ClassTools3D {
      * @param in The input source. Right now, needs to be a Scanner
      * @return   A point read from s
      */
-    static Point3D readPoint(Object in){
-        Point3D retVal = null;
+    static ClassPoint3D readPoint(Object in){
+        ClassPoint3D retVal = null;
         if(in instanceof Scanner){
             Scanner s = (Scanner)in;
             double a = s.nextDouble();
             double b = s.nextDouble();
             double c = s.nextDouble();
-            retVal = new Point3D(a, b, c);
+            retVal = new ClassPoint3D(a, b, c);
         }
         return retVal;
         
@@ -68,14 +68,14 @@ public class ClassTools3D {
      * @param   in The input source. Right now, needs to be a Scanner
      * @return     A triangle read from in.
      */
-    static Triangle3D readTriangle(Object in){
-        Triangle3D retVal = null;
+    static ClassTriangle3D readTriangle(Object in){
+        ClassTriangle3D retVal = null;
         if(in instanceof Scanner){
             Scanner s = (Scanner)in;
-            Point3D p1 = readPoint(s);
-            Point3D p2 = readPoint(s);
-            Point3D p3 = readPoint(s);
-            retVal = new Triangle3D(p1, p2, p3);
+            ClassPoint3D p1 = readPoint(s);
+            ClassPoint3D p2 = readPoint(s);
+            ClassPoint3D p3 = readPoint(s);
+            retVal = new ClassTriangle3D(p1, p2, p3);
         }
         return retVal;
         
@@ -97,10 +97,10 @@ public class ClassTools3D {
      *  A positive return value indicates that vertices of the triangle ABC
      *  will appear in counter-clockwise order, as seen from point D.
      */
-    public static double sigmaVal(Point3D A, Point3D B, Point3D C, Point3D D){
-        Point3D b = B.multAndAdd(-1, A);
-        Point3D c = C.multAndAdd(-1, A);
-        Point3D d = D.multAndAdd(-1, A);
+    public static double sigmaVal(ClassPoint3D A, ClassPoint3D B, ClassPoint3D C, ClassPoint3D D){
+        ClassPoint3D b = B.multAndAdd(-1, A);
+        ClassPoint3D c = C.multAndAdd(-1, A);
+        ClassPoint3D d = D.multAndAdd(-1, A);
         
         return b.x*c.y*d.z + b.y*c.z*d.x + b.z*c.x*d.y -
                 b.z*c.y*d.x - b.y*c.x*d.z - b.x*c.z*d.y;

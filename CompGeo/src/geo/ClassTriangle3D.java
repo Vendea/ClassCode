@@ -1,4 +1,4 @@
-package geometry3D;
+package geo;
 
 import java.awt.Polygon;
 
@@ -10,9 +10,9 @@ import java.awt.Polygon;
  * if it has an outside, and an object.
  */
 
-public class Triangle3D {
-    Point3D[] points;        // Vertices of the triangle
-    Triangle3D[] triangles; // Neighbor triangles. triangles[0] is on edge 0-1.
+public class ClassTriangle3D {
+    ClassPoint3D[] points;        // Vertices of the triangle
+    ClassTriangle3D[] triangles; // Neighbor triangles. triangles[0] is on edge 0-1.
     
     /**
      * Constructor
@@ -21,8 +21,8 @@ public class Triangle3D {
      * @param p1  second vertex
      * @param p2  third vertex, going counter-clockwise around the triangle as seen from the "outside"
      */
-    public Triangle3D(Point3D p0, Point3D p1, Point3D p2){
-        points = new Point3D[3];
+    public ClassTriangle3D(ClassPoint3D p0, ClassPoint3D p1, ClassPoint3D p2){
+        points = new ClassPoint3D[3];
         points[0] = p0;
         points[1] = p1;
         points[2] = p2;
@@ -41,7 +41,7 @@ public class Triangle3D {
      * @param d  the displacement vector
      * @return
      */
-    public Triangle3D add(Point3D d){
-        return new Triangle3D(points[0].add(d), points[1].add(d), points[2].add(d));
+    public ClassTriangle3D add(ClassPoint3D d){
+        return new ClassTriangle3D(points[0].add(d), points[1].add(d), points[2].add(d));
     }
 }
