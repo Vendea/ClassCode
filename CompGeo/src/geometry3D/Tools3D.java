@@ -23,11 +23,13 @@ public class Tools3D {
 		if(Point3D.sigma(a, b, c, d)==Point3D.sigma(a, b, c, e)){
 			//if the segment and triangle are in the same plane
 			if(Point3D.sigma(a, b, c, d) == 0){
-				if(de.intersects(abc.A) || de.intersects(abc.B) || de.intersects(abc.C)){
+				// worry about that later
+				/*if(de.intersects(abc.A) || de.intersects(abc.B) || de.intersects(abc.C)){
 					return "Pierces";
 				}
 				else
-					return "Misses";
+					return "Misses";*/
+				return 	"Seriously?";
 			}
 			else{
 				return "Misses";
@@ -39,21 +41,23 @@ public class Tools3D {
 	}
 
 	private static String resultsOfThisOtherFunction(Triangle3D abc, LineSeg3D de) {
-		Plane3D A = new Plane3D(abc.A.vecequiv, de.vecequiv, abc.b);
-		Plane3D B = new Plane3D(abc.B.vecequiv, de.vecequiv, abc.c);
-		Plane3D C = new Plane3D(abc.C.vecequiv, de.vecequiv, abc.a);
+		//Plane3D A = new Plane3D(abc.A.vecequiv, de.vecequiv, abc.b);
+		//Plane3D B = new Plane3D(abc.B.vecequiv, de.vecequiv, abc.c);
+		//Plane3D C = new Plane3D(abc.C.vecequiv, de.vecequiv, abc.a);
 		Point3D a = abc.a;
 		Point3D b = abc.b;
 		Point3D c = abc.c;
-		double das = a.distToPlane(A);
-		double dbs = b.distToPlane(B);
-		double dcs = c.distToPlane(C);
-		Point3D test = de.beg;
-		double deA = test.distToPlane(A);
-		double deB = test.distToPlane(B);
-		double deC = test.distToPlane(C);
-		
-		if(A.contains(de) || B.contains(de) || C.contains(de)){
+		Point3D d = de.beg;
+		Point3D e = de.end;
+		//double das = a.distToPlane(A);
+		//double dbs = b.distToPlane(B);
+		//double dcs = c.distToPlane(C);
+		//Point3D test = de.beg;
+		//double deA = test.distToPlane(A);
+		//double deB = test.distToPlane(B);
+		//double deC = test.distToPlane(C);
+
+		/*if(A.contains(de) || B.contains(de) || C.contains(de)){
 			if((A.contains(de)&&B.contains(de)) || (A.contains(de)&&C.contains(de)) || (C.contains(de)&&B.contains(de)) ){
 				return "Nicks";
 			}
@@ -65,7 +69,26 @@ public class Tools3D {
 			return "Pierces";
 		}
 		else
+			return "Misses";*/
+
+		if(Point3D.sigma(a,e,b,d) == 0 || Point3D.sigma(b,e,c,d) ==0 ||
+				Point3D.sigma(c,e,a,d) == 0){
+			if(Point3D.sigma(a,e,b,d) == Point3D.sigma(b,e,c,d))
+				return "Nicks";
+			else if(Point3D.sigma(b,e,c,d) == Point3D.sigma(c,e,a,d))
+				return "Nicks";
+			else if(Point3D.sigma(c,e,a,d) == Point3D.sigma(a,e,b,d))
+				return "Nicks";
+			else
+				return "Shaves";
+		}
+
+		else if ((Point3D.sigma(a,e,b,d) == Point3D.sigma(b,e,c,d))&&
+				(Point3D.sigma(b,e,c,d)== Point3D.sigma(c,e,a,d)))
+			return "Pierces";
+		else
 			return "Misses";
+
 	}
 	static Triangle3D readTriangle(Object in){
 		Triangle3D retVal = null;
