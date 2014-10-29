@@ -15,7 +15,6 @@ public class Tools3D {
 	}
 
 	public static String Intersects(Triangle3D abc, LineSeg3D de){
-		String retval = "";
 		Point3D a = abc.a;
 		Point3D b = abc.b;
 		Point3D c = abc.c;
