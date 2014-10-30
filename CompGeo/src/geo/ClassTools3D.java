@@ -1,5 +1,7 @@
 package geo;
 
+import geometry3D.Point3D;
+
 import java.util.Scanner;
 
 /**
@@ -39,9 +41,38 @@ public class ClassTools3D {
      *                 "Nicks" means that the segment intersects a vertex of the triangle
      *                 "Misses" means it misses.
      */
-    public static String segTriIntersection(ClassTriangle3D t, ClassPoint3D A, ClassPoint3D B){
-        // Your code here
-        return "Your code here";        
+    public static String segTriIntersection(ClassTriangle3D abc, ClassPoint3D A, ClassPoint3D B){
+    	ClassPoint3D a = abc.points[0];
+		ClassPoint3D b = abc.points[1];
+		ClassPoint3D c = abc.points[2];
+		ClassPoint3D d = A;
+		ClassPoint3D e = B;
+		if(sigma(a, b, c, d)==sigma(a, b, c, e)){
+			//if the segment and triangle are in the same plane
+			if(sigma(a, b, c, d) == 0){
+				return 	"Seriously?";
+			}
+			else{
+				return "Misses";
+			}
+		}
+		else if(sigma(a,e,b,d) == 0 || sigma(b,e,c,d) ==0 ||
+				sigma(c,e,a,d) == 0){
+			if(sigma(a,e,b,d) == sigma(b,e,c,d))
+				return "Nicks";
+			else if(sigma(b,e,c,d) == sigma(c,e,a,d))
+				return "Nicks";
+			else if(sigma(c,e,a,d) == sigma(a,e,b,d))
+				return "Nicks";
+			else
+				return "Shaves";
+		}
+
+		else if ((sigma(a,e,b,d) == sigma(b,e,c,d))&&
+				(sigma(b,e,c,d)== sigma(c,e,a,d)))
+			return "Pierces";
+		else
+			return "Misses";
     }
     
     /**
@@ -104,5 +135,8 @@ public class ClassTools3D {
         
         return b.x*c.y*d.z + b.y*c.z*d.x + b.z*c.x*d.y -
                 b.z*c.y*d.x - b.y*c.x*d.z - b.x*c.z*d.y;
+    }
+    public static int sigma(ClassPoint3D A, ClassPoint3D B, ClassPoint3D C, ClassPoint3D D){
+    	return sigmaVal(A,B,C,D)<0 ? -1 : (sigmaVal(A,B,C,D) > 0 ? 1 : 0);
     }
 }
