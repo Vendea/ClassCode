@@ -5,12 +5,16 @@ package geometry;
 // and it counts the number of simple polygons on the sets
 
 import java.awt.*;
+import java.awt.geom.Line2D;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
+import java.util.HashMap;
+import java.util.HashSet;
 
 import javax.swing.*;
 
-public class MakeSimple {
+public class MakeSimpleMod {
     static int POINTWID = 2; // size of points
 
     // the x and y arrays hold the coordinates
@@ -18,6 +22,9 @@ public class MakeSimple {
     // You want to fill the C array with the simple polygon
     static double x[] = new double[200];
     static double y[] = new double[200];
+    
+    //static Line2D[] edges = new Line2D[200];
+    //static PolygonDouble[] convex = new PolygonDouble[200];
 
     static int B[] = new int[200]; // the permutation matrix
     static int C[] = new int[200]; // the one that becomes simple
@@ -26,7 +33,7 @@ public class MakeSimple {
     
     // Variables for the minimal convexulation
     static int numConvexulationChords;
-    static DSArrayList<int[]> convexulationChords;
+    static ArrayList<int[]> convexulationChords;
 
     static SimpleFrame myFrame;
 
@@ -190,23 +197,100 @@ public class MakeSimple {
      */
     public static void createMinimalConvexulation(){
     	makeCounterclockwise(D, numPoints);  // This is required for chordInside() to work properly
+    	ArrayList<int[]> tempchords = getChords(D, x, y, numPoints);
+    	convexulationChords = convexulate(D, tempchords, numPoints);
+    	numConvexulationChords = convexulationChords.size();
+    }
+    
+    static ArrayList<int[]> convexulate(int[] d2, ArrayList<int[]> chords, int np){
+    	if(isConvex(d2, np)){
+    		return null;
+    	}
+    	
+    	ArrayList<int[]> rval = chords;
+    	ArrayList<Integer> dl = new ArrayList<Integer>(), dr = new ArrayList<Integer>();
+    	for(int i = 0; i < chords.size() ;i++){
+    		int[] ti = chords.get(i);
+    		
+    		HashSet<int[]> combx = new HashSet<int[]>();
+    		combx.add(ti);
+    		
+    		for(int j = ti[0]; j!=ti[1]; j++){
+    			dl.add(d2[j%np]);
+    		}
+    		dl.add(d2[ti[1]]);
+    		for(int j = ti[1]; j!=ti[0]; j++){
+    			dr.add(d2[j%np]);
+    		}
+    		dr.add(d2[ti[0]]);
+    		
+    		int[] dleft = new int[dl.size()], dright = new int[dl.size()];
+    		
+    		for(int j = 0; j < dl.size();j++){
+    			dleft[j] = dl.get(j);
+    			dright[j] = dr.get(j);
+    		}
+    		ArrayList<int[]> cleft = getChords(dleft, x, y, dleft.length);
+    		ArrayList<int[]> cright = getChords(dright, x, y, dright.length);
+    		
+    		ArrayList<int[]> templeft = convexulate(dleft, cleft, dleft.length );
+    		ArrayList<int[]> tempright =convexulate(dright, cright, dright.length);
+    		
+    		combx.addAll(templeft);
+    		combx.addAll(tempright);
+    		
+    		if(combx.size()<rval.size()){
+    			rval = new ArrayList<int[]>();
+    			rval.addAll(combx);
+    		}
+    	}
+		return rval;	
+    }
+
+    static ArrayList<int[]> getChords(int[] d2, double[]tx, double[] ty, int nP){
+    	ArrayList<int[]> rval = new ArrayList<int[]>();
     	numConvexulationChords = 0;
-    	convexulationChords = new DSArrayList<int[]>();
     	// Find all interior chords of the polygon, very naively.
-    	for(int i = 0; i < numPoints - 2; i++){
-    		for(int j = i+2; j < numPoints - (i==0 ? 1 : 0); j++){
-    			if(chordInside(D, i, j, numPoints) && !chordCrossesBoundary(D, i, j, numPoints)){
+    	for(int i = 0; i < nP - 2; i++){
+    		for(int j = i+2; j < nP - (i==0 ? 1 : 0); j++){
+    			if(chordInside(d2, i, j, nP) && !chordCrossesBoundary(d2, i, j, nP)){
     				int[] chord = {i, j};
-    				convexulationChords.add(chord);
+    				rval.add(chord);
         			numConvexulationChords++;
     			}
     		}
     	}
+    	for(int i = rval.size()-1;i>=0;i--){
+        	int topbefore = (rval.get(i)[0] + nP - 1) % nP;
+        	int topafter  = (rval.get(i)[0] + 1) % nP;
+        	int bbefore = (rval.get(i)[1] + nP - 1) % nP;
+        	int bafter = (rval.get(i)[1] + 1) % nP;
+    		double tmx = tx[d2[rval.get(i)[0]]];
+    		double tmy = ty[d2[rval.get(i)[0]]];
+    		double bmx = tx[d2[rval.get(i)[1]]];
+			double bmy = ty[d2[rval.get(i)[1]]];
+			if(sigma(tx[d2[topbefore]], ty[d2[topbefore]], tmx, tmy, tx[d2[topafter]], ty[d2[topafter]])!=-1){
+				if(sigma(tx[d2[bbefore]], ty[d2[bbefore]], bmx, bmy, tx[d2[bafter]], ty[d2[bafter]])!=-1){
+					rval.remove(i);
+					//numConvexulationChords--;
+				}
+			}
+    	}
+		return rval;	
     }
     
     
+    static boolean isConvex(int[] d2, int np){
+    	for(int i= 1; i <= d2.length;i++){
+    		if(sigma(x[d2[(i-1)%np]], y[d2[(i-1)%np]], x[d2[i%np]], y[d2[i%np]], x[d2[(i+1)%np]], y[d2[(i+1)%np]]) == -1){
+    			return false;
+    		}
+    	}
+    	return true;
+    }
+        
     /**
-     * Decides whether the chord from point s to e enters the polygon P as it leaves vertex x
+     * Decides whether the chord from point s to e enters the polygon P as it leaves vertex s
      * @param P  The array giving the order of the simple polygon's vertices
      * @param s  the start index of the chord, in the array P
      * @param e  the end index of the chord, in the array P
