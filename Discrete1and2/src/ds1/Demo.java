@@ -13,7 +13,7 @@ public class Demo{
 		//Nim nim = new Nim(2,2,2);
 		//DSGameNode<Object> tree = nim.buildTree(nim.board);
 		//System.out.println("Nim 2,2,2 has this many leaves: " + tree.leavesOfTree());
-		TicTacToe ttt = new TicTacToe();
+		BattleshipMineCopy ttt = new BattleshipMineCopy();
 		//NimCopy n = new NimCopy(1,1,1);
 		//BattleshipGUI b = new BattleshipGUI();
 		//TicTacToeGUI t = new TicTacToeGUI();
