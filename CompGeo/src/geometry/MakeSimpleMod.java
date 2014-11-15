@@ -37,7 +37,7 @@ public class MakeSimpleMod {
 
 	static SimpleFrame myFrame;
 
-	static int numPoints = 17;
+	static int numPoints = 5;
 	static int numHullPoints = 0;
 
 	public static void main(String args[]) {
@@ -195,31 +195,44 @@ public class MakeSimpleMod {
 	 * This finds a decomposition of the interior of the very simple convexulation
 	 * as ordered in the array D.
 	 */
+	static HashMap<int[], ArrayList<int[]>> chordMap;
+	static HashMap<int[], ArrayList<int[]>> otherMap;
+
 	public static void createMinimalConvexulation(){
 		makeCounterclockwise(D, numPoints);  // This is required for chordInside() to work properly
-		ArrayList<int[]> tempchords = getChords(D, x, y, numPoints);
+		ArrayList<int[]> tempchords = getChords(D, numPoints);
 		//convexulationChords = tempchords;
 		//numConvexulationChords = tempchords.size();
+		chordMap = new HashMap<int[], ArrayList<int[]>>();
+		otherMap = new HashMap<int[], ArrayList<int[]>>();
 		convexulationChords = convexulate(D, tempchords, numPoints);
 		numConvexulationChords = convexulationChords.size();
 	}
 
 	static ArrayList<int[]> convexulate(int[] d1, ArrayList<int[]> chords, int np){
-		
+
 		int[] d2 = new int[np];
 		for(int i = 0; i <np;i++){
 			d2[i] = d1[i];    		
 		}
 
+		if(chordMap.containsKey(d2))
+			return chordMap.get(d2);
+
 		if(isConvex(d2, np)){
 			return new ArrayList<int[]>();
 		}
 
-		ArrayList<int[]> rval = new ArrayList<int[]>();//chords;
+		ArrayList<int[]> rval = chords;
 		ArrayList<Integer> dl = new ArrayList<Integer>(), dr = new ArrayList<Integer>();
-		for(int i = 0; i < chords.size() ;i++){
 
+		for(int i = 0; i < chords.size() ;i++){
+			
 			int[] ti = chords.get(i);
+			
+			if(otherMap.containsKey(ti))
+				return otherMap.get(ti);
+			
 			rval.add(ti);
 
 			int first = ti[0]<ti[1] ? ti[0] : ti[1];
@@ -243,46 +256,49 @@ public class MakeSimpleMod {
 			for(int j = 0; j < dl.size();j++){
 				dleft[j] = dl.get(j);
 			}
-
 			for(int j = 0; j < dr.size(); j++){
 				dright[j] = dr.get(j);
 			}
-			for(int j = ti[0]; j!=ti[1]; j++){
-				dl.add(d2[j%np]);
+
+			HashSet<int[]> combx = new HashSet<int[]>();
+
+			ArrayList<int[]> cleft = getChords(dleft, dl.size());
+			ArrayList<int[]> cright = getChords(dright, dr.size());
+
+			ArrayList<int[]> templeft = convexulate(dleft, cleft, dl.size());
+			ArrayList<int[]> tempright = convexulate(dright, cright, dr.size());
+
+			combx.addAll(tempright);
+			combx.addAll(templeft);
+			combx.add(ti);
+
+			if(combx.size() < rval.size()){
+				rval = new ArrayList<int[]>();
+				rval.addAll(combx);
 			}
-			dl.add(d2[ti[1]]);
-			for(int j = ti[1]; j!=ti[0]; j++){
-				dr.add(d2[j%np]);
-			}
-			dr.add(d2[ti[0]]);
+			otherMap.put(ti, rval);
 
-			for(int j = 0; j < dl.size();j++){
-				dleft[j] = dl.get(j);
-				dright[j] = dr.get(j);
-			}
-			ArrayList<int[]> cleft = getChords(dleft, x, y, dleft.length);
-			ArrayList<int[]> cright = getChords(dright, x, y, dright.length);
-
-			ArrayList<int[]> templeft = convexulate(dleft, cleft, dleft.length );
-			ArrayList<int[]> tempright =convexulate(dright, cright, dright.length);
-
-
-
+			//if(isConvex(dleft, dl.size())&&isConvex(dright, dr.size())&&rval.size()<= np/2)
+			if(rval.size()<=np/2)
+				return rval;
 		}
+		chordMap.put(d2, rval);
 		return rval;	
 	}
 
-	static ArrayList<int[]> getChords(int[] d2, double[]tx, double[] ty, int nP){
+	static ArrayList<int[]> getChords(int[] d2, int nP){
 		ArrayList<int[]> rval = new ArrayList<int[]>();
 		numConvexulationChords = 0;
 		// Find all interior chords of the polygon, very naively.
 		for(int i = 0; i < nP - 2; i++){
 			for(int j = i+2; j < nP - (i==0 ? 1 : 0); j++){
-				if(chordInside(d2, i, j, nP) && !chordCrossesBoundary(d2, i, j, nP)){
-					int[] chord = {i, j};
-					rval.add(chord);
-					System.out.println("got a chord!");
-				}
+				//if((sigma(x[d2[i-1]], y[d2[i-1]], x[d2[i%nP]], y[d2[i%nP]], x[d2[(i+1)%nP]], y[d2[(i+1)%nP]]) == -1)||
+					//	(sigma(x[d2[j-1]], y[d2[j-1]], x[d2[j%nP]], y[d2[j%nP]], x[d2[(j+1)%nP]], y[d2[(j+1)%nP]]) == -1)){
+					if(chordInside(d2, i, j, nP) && !chordCrossesBoundary(d2, i, j, nP)){
+						int[] chord = {i, j};
+						rval.add(chord);
+					}
+				//}
 			}
 		}
 		//find chords with at least one end on an interior angle > 180
@@ -291,12 +307,12 @@ public class MakeSimpleMod {
 			int topafter  = (rval.get(i)[0] + 1) % nP;
 			int bbefore = (rval.get(i)[1] + nP - 1) % nP;
 			int bafter = (rval.get(i)[1] + 1) % nP;
-			double tmx = tx[d2[rval.get(i)[0]]];
-			double tmy = ty[d2[rval.get(i)[0]]];
-			double bmx = tx[d2[rval.get(i)[1]]];
-			double bmy = ty[d2[rval.get(i)[1]]];
-			if(sigma(tx[d2[topbefore]], ty[d2[topbefore]], tmx, tmy, tx[d2[topafter]], ty[d2[topafter]])!=-1){
-				if(sigma(tx[d2[bbefore]], ty[d2[bbefore]], bmx, bmy, tx[d2[bafter]], ty[d2[bafter]])!=-1){
+			double tmx = x[d2[rval.get(i)[0]]];
+			double tmy = y[d2[rval.get(i)[0]]];
+			double bmx = x[d2[rval.get(i)[1]]];
+			double bmy = y[d2[rval.get(i)[1]]];
+			if(sigma(x[d2[topbefore]], y[d2[topbefore]], tmx, tmy, x[d2[topafter]], y[d2[topafter]])!=-1){
+				if(sigma(x[d2[bbefore]], y[d2[bbefore]], bmx, bmy, x[d2[bafter]], y[d2[bafter]])!=-1){
 					rval.remove(i);
 				}
 			}
