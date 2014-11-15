@@ -1,4 +1,4 @@
-package geometry;
+package geo;
 
 // Makes simple polygons.
 // The "count" tab lets you draw points and move them,
