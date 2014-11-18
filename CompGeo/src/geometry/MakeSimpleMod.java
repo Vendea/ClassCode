@@ -37,7 +37,7 @@ public class MakeSimpleMod {
 
 	static SimpleFrame myFrame;
 
-	static int numPoints = 5;
+	static int numPoints = 17;
 	static int numHullPoints = 0;
 
 	public static void main(String args[]) {
@@ -215,6 +215,15 @@ public class MakeSimpleMod {
 		for(int i = 0; i <np;i++){
 			d2[i] = d1[i];    		
 		}
+		for(int i = 0; i < d1.length; i++){
+			System.out.print(", " +d1[i]);
+		}
+		System.out.println("");
+		for(int j = 0; j < d2.length;j++){
+			System.out.print(", " +d2[j]);
+		}
+		System.out.println("");
+		System.out.println(d2.length);
 
 		if(chordMap.containsKey(d2))
 			return chordMap.get(d2);
@@ -227,12 +236,12 @@ public class MakeSimpleMod {
 		ArrayList<Integer> dl = new ArrayList<Integer>(), dr = new ArrayList<Integer>();
 
 		for(int i = 0; i < chords.size() ;i++){
-
+			
 			int[] ti = chords.get(i);
-
+			
 			if(otherMap.containsKey(ti))
 				return otherMap.get(ti);
-
+			
 			rval.add(ti);
 
 			int first = ti[0]<ti[1] ? ti[0] : ti[1];
@@ -261,7 +270,10 @@ public class MakeSimpleMod {
 			}
 
 			HashSet<int[]> combx = new HashSet<int[]>();
-
+			
+			dleft = makeCounterclockwise(dleft, dl.size());
+			dright = makeCounterclockwise(dright, dr.size());
+			
 			ArrayList<int[]> cleft = getChords(dleft, dl.size());
 			ArrayList<int[]> cright = getChords(dright, dr.size());
 
@@ -279,8 +291,7 @@ public class MakeSimpleMod {
 			otherMap.put(ti, rval);
 
 			//if(isConvex(dleft, dl.size())&&isConvex(dright, dr.size())&&rval.size()<= np/2)
-			if(rval.size()<=np/2)
-				return rval;
+			return rval;
 		}
 		chordMap.put(d2, rval);
 		return rval;	
@@ -292,10 +303,13 @@ public class MakeSimpleMod {
 		// Find all interior chords of the polygon, very naively.
 		for(int i = 0; i < nP - 2; i++){
 			for(int j = i+2; j < nP - (i==0 ? 1 : 0); j++){
-				if(chordInside(d2, i, j, nP) && !chordCrossesBoundary(d2, i, j, nP)){
-					int[] chord = {i, j};
-					rval.add(chord);
-				}
+				//if((sigma(x[d2[i-1]], y[d2[i-1]], x[d2[i%nP]], y[d2[i%nP]], x[d2[(i+1)%nP]], y[d2[(i+1)%nP]]) == -1)||
+					//	(sigma(x[d2[j-1]], y[d2[j-1]], x[d2[j%nP]], y[d2[j%nP]], x[d2[(j+1)%nP]], y[d2[(j+1)%nP]]) == -1)){
+					if(chordInside(d2, i, j, nP) && !chordCrossesBoundary(d2, i, j, nP)){
+						int[] chord = {i, j};
+						rval.add(chord);
+					}
+				//}
 			}
 		}
 		//find chords with at least one end on an interior angle > 180
@@ -340,15 +354,15 @@ public class MakeSimpleMod {
 	public static boolean chordInside(int[] P, int s, int e, int n){
 		int before = (s + n - 1) % n;
 		int after  = (s + 1) % n;
-		if(sigma(x[before], y[before], x[s], y[s], x[after], y[after]) > 0){
-			if(sigma(x[before], y[before], x[s], y[s], x[e], y[e]) > 0 &&
-					sigma(x[e], y[e], x[s], y[s], x[after], y[after]) > 0)
+		if(sigma(x[P[before]], y[P[before]], x[P[s]], y[P[s]], x[P[after]], y[P[after]]) > 0){
+			if(sigma(x[P[before]], y[P[before]], x[P[s]], y[P[s]], x[P[e]], y[P[e]]) > 0 &&
+					sigma(x[P[e]], y[P[e]], x[P[s]], y[P[s]], x[P[after]], y[P[after]]) > 0)
 				return true;
 			else 
 				return false;
 		} else {
-			if(sigma(x[before], y[before], x[s], y[s], x[e], y[e]) > 0 ||
-					sigma(x[e], y[e], x[s], y[s], x[after], y[after]) > 0)
+			if(sigma(x[P[before]], y[P[before]], x[P[s]], y[P[s]], x[P[e]], y[P[e]]) > 0 ||
+					sigma(x[P[e]], y[P[e]], x[P[s]], y[P[s]], x[P[after]], y[P[after]]) > 0)
 				return true;
 			else 
 				return false;
@@ -434,7 +448,7 @@ public class MakeSimpleMod {
 				* (y[i] - y[j]));
 	}
 
-	/**
+	/*
 	 * Naive crosses method. Assumes points are in general position, which
 	 * is good enough for this project.
 	 * Returns true if (a,b)-(c,d) crosses (e,f)-(g,h)
@@ -453,7 +467,7 @@ public class MakeSimpleMod {
 	 * If the polygon P is traversed counter-clockwise, it leaves it alone, and otherwise reverses it.
 	 * @param P  The indices of the polygon, assumed to be simple
 	 */
-	public static void makeCounterclockwise(int[] P, int n){
+	public static int[] makeCounterclockwise(int[] P, int n){
 		if(signedArea(P, n) < 0){ // reverse the indices
 			for(int i = 0; i < n/2; i++){
 				int tmp = P[i];
@@ -461,6 +475,7 @@ public class MakeSimpleMod {
 				P[n-1-i] = tmp;
 			}
 		}
+		return P;
 	}
 
 
@@ -654,9 +669,9 @@ public class MakeSimpleMod {
 			// corresponding to the very simple polygon.
 			g2.setColor(Color.red);
 			for (int i = 0; i < numHullPoints; i++) {
-				g2.drawLine((int) (Xwid * x[i]), size.height - (int) (Ywid * y[i]),
-						(int) (Xwid * x[(i + 1) % numHullPoints]),
-						size.height - (int) (Ywid * y[(i + 1) % numHullPoints]));
+				g2.drawLine((int) (Xwid * x[D[i]]), size.height - (int) (Ywid * y[D[i]]),
+						(int) (Xwid * x[D[(i + 1) % numHullPoints]]),
+						size.height - (int) (Ywid * y[D[(i + 1) % numHullPoints]]));
 			}
 			// Now draw the points
 			for (int i = 0; i < numPoints; i++) {
@@ -665,13 +680,18 @@ public class MakeSimpleMod {
 			}
 
 			// Now draw the chords found in our createMinimalConvexulation function
-			g2.setColor(Color.blue);
-			for(int i = 0; i < numConvexulationChords; i++){
+			g2.setColor(Color.green);
+			for(int i = 1; i < numConvexulationChords; i++){
 				int[] chord = convexulationChords.get(i);
-				g2.drawLine((int) (Xwid * x[chord[0]]), size.height - (int) (Ywid * y[chord[0]]),
-						(int) (Xwid * x[chord[1]]),
-						size.height - (int) (Ywid * y[chord[1]]));
+				g2.drawLine((int) (Xwid * x[D[chord[0]]]), size.height - (int) (Ywid * y[D[chord[0]]]),
+						(int) (Xwid * x[D[chord[1]]]),
+						size.height - (int) (Ywid * y[D[chord[1]]]));
 			}
+			g2.setColor(Color.black);
+			int[] chord = convexulationChords.get(0);
+			g2.drawLine((int) (Xwid * x[D[chord[0]]]), size.height - (int) (Ywid * y[D[chord[0]]]),
+						(int) (Xwid * x[D[chord[1]]]),
+						size.height - (int) (Ywid * y[D[chord[1]]]));
 		}
 	}
 }
