@@ -4,6 +4,8 @@ package geometry;
 // The "count" tab lets you draw points and move them,
 // and it counts the number of simple polygons on the sets
 
+//Errors on everything, generally doesn't work
+
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;

@@ -4,6 +4,8 @@ package geometry;
 // The "count" tab lets you draw points and move them,
 // and it counts the number of simple polygons on the sets
 
+//Doesn't error out, but convex hull and convexulated don't work properly
+
 import java.awt.*;
 import java.awt.geom.Line2D;
 import java.util.ArrayList;

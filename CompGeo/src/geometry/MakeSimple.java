@@ -4,6 +4,8 @@ package geometry;
 // The "count" tab lets you draw points and move them,
 // and it counts the number of simple polygons on the sets
 
+//Also errors out upon increasing vertices
+
 import java.awt.*;
 import java.util.ArrayList;
 import java.util.Arrays;

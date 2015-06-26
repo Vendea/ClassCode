@@ -1,13 +1,24 @@
 package geometry;
 
 import java.awt.Color;
+import java.awt.GradientPaint;
 import java.awt.Graphics2D;
+import java.awt.Rectangle;
+import java.awt.TexturePaint;
+import java.awt.geom.AffineTransform;
 import java.awt.geom.Path2D;
 import java.awt.geom.Point2D;
 import java.awt.geom.Point2D.Double;
+import java.awt.geom.Rectangle2D;
+import java.awt.image.BufferedImage;
+import java.awt.image.IndexColorModel;
+import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+
+import javax.imageio.ImageIO;
 
 
 public class Environment {
@@ -17,14 +28,41 @@ public class Environment {
     DSArrayList<Triangle3D> triangles;
     ArrayList<EnvironmentObject> objects;
     double[][] transform = {{1,0,0,0},{0,1,0,0},{0,0,1,0}, {0, 0, 0, 1}};
-    Graphics2D graphics;                 // The rendering context
-    Point2D.Double cameraLocation;
+    Rectangle r = new Rectangle(WIDTH,HEIGHT);
+	
+	Graphics2D graphics;            //NOT USED     // The rendering context
+    
+	//buffered image for texturing
+	public BufferedImage loadTheImage(){
+		BufferedImage img = null;
+		try{
+			img = ImageIO.read(new File("C:/Users/KatherineMJB/My Pictures/blackandwhite.jpg"));
+		}catch(IOException e){
+			System.err.print("Did not load texture");
+		}
+		return img;
+	}
+
+	/*Color color = Color.cyan;
+	IndexColorModel colorModel = new IndexColorModel(1, 2,
+			new byte[]{0, (byte) color.getRed()},
+			new byte[]{0, (byte) color.getGreen()},
+			new byte[]{0, (byte) color.getBlue()},0);
+	BufferedImage textureimg = new BufferedImage(20, 20
+			, BufferedImage.TYPE_BYTE_INDEXED, colorModel);*/
+	//BufferedImage textureimg = loadTheImage();
+	//TexturePaint TEXTURE = new TexturePaint(textureimg, r);
+	
+	GradientPaint gradient = new GradientPaint(10,10, Color.white, 50,50, Color.blue, true);
+	Point2D.Double cameraLocation;
     Point2D.Double cameraDirection;
     double[][] leftRotationMatrix;
     double[][] rightRotationMatrix;
     double[][] moveForwardMatrix;
     double[][] moveBackwardMatrix;
 
+	Point3D lightSource = new Point3D(1,1,1);
+	
     // Locations of the view frustrum planes
     double near = 1;
     double left = -1;
@@ -48,10 +86,27 @@ public class Environment {
     }
 
     public void render(Graphics2D graphics){
-        graphics.setColor(Color.DARK_GRAY);
+       /* graphics.setColor(Color.DARK_GRAY);
         graphics.fillRect(0, 0, WIDTH, WIDTH);
-        graphics.setColor(Color.WHITE);
-        
+        graphics.setColor(Color.WHITE);*/
+		
+        //testing gradient painting on background
+
+		
+		graphics.setPaint(gradient);
+		graphics.fillRect(0, 0, WIDTH, HEIGHT);
+		
+		//transparency based on height of light source
+		float alpha = (float) ((lightSource.z+8)/10);
+		if(alpha>1.0)
+			alpha = 1F;
+		if(alpha<0)
+			alpha = 0F;
+		graphics.setPaint(new Color(0F,0F,0F,1-alpha));
+		graphics.fillRect(0, 0, WIDTH, HEIGHT);
+
+		graphics.setColor(Color.WHITE);
+		
         // Render the triangles
         for(int i = 0; i < triangles.size(); i++)
             if(triangleIsVisible(triangles.get(i)) && triangleIsFacingCamera(triangles.get(i)))
@@ -83,8 +138,9 @@ public class Environment {
         Point2D.Double[] pts = new Point2D.Double[3]; // 2D coords of projected triangles
         double[] x = new double[3];                      // Same thing, different form
         double[] y = new double[3];                      // ""
-
-        // Transform them points form the 3D world to the 2D screen
+		Path2D.Double p = new Path2D.Double();
+		
+        // Transform them points from the 3D world to the 2D screen
         for(int i = 0; i < 3; i++){
             pts[i] = project(t.points[i]);
             x[i] = pts[i].x * WIDTH;
@@ -92,19 +148,138 @@ public class Environment {
         }
 
         // Draw the outlines of the triangles
-        graphics.setColor(Color.black);
+        /*graphics.setColor(Color.red);
         for(int i = 0; i < 3; i++)
-            graphics.drawLine((int)x[i], (int)y[i], (int)x[(i+1)%3], (int)y[(i+1)%3]);
+            graphics.drawLine((int)x[i], (int)y[i], (int)x[(i+1)%3], (int)y[(i+1)%3]);*/
         
         // Draw the interiors of the triangles
-        graphics.setColor(new Color(140, 180, 220, 200));
-        Path2D.Double p = new Path2D.Double();
+		
+		//get the shading from normalize vectors, create 2D shape for graphics to fill
+		
+        float shade = shadeTriangle(lightSource, t);
         p.moveTo(x[0], y[0]);
         p.lineTo(x[1], y[1]);
         p.lineTo(x[2], y[2]);
         p.closePath();
-        graphics.fill(p);
+		if(lightSource.z<-8){
+			graphics.setPaint(Color.black);
+			graphics.fill(p);
+			
+			return;
     }
+	
+		Point3D[] test = t.getHypotenuse();
+		Point3D midpoint = new Point3D(test[0].x/2+test[1].x/2, 
+				test[0].y/2+test[1].y/2, test[0].z/2+ test[1].z/2);
+		double a = midpoint.x-cameraPos[0];
+		double b = midpoint.y-cameraPos[1];
+		double c = midpoint.z-cameraPos[2];
+		double dist = Math.sqrt((a*a)+(b*b)+(c*c));
+		double d = midpoint.x-lightSource.x;
+        double e = midpoint.y-lightSource.y;
+		double f = midpoint.z-lightSource.z;
+		
+		if(!t.onFloor){
+			double factor;
+
+			if(dist<1)
+				factor = 1000;
+			//else if (dist> 1000)
+			//factor = 1;
+			else
+				factor = 5000/Math.sqrt((a*a) + (b*b) + (c*c)); //factor to shrink/enlarge texture based on triangle's distance from camera.
+
+			/*TexturePaint texture;
+			texture = new TexturePaint(textureimg,
+					new Rectangle2D.Double(x[0], y[0],
+							factor, factor));
+			graphics.setPaint(texture);
+			graphics.fill(p);*/
+			
+			graphics.setPaint(Color.red);
+			graphics.fill(p);
+			
+			float distshade = (float)(1/Math.sqrt((d*d)+(e*e)+(f*f)));			
+			if(shade>1 || shade<0)
+				shade = 0.1F;
+			float alpha = shade+distshade;
+			if(alpha<0)
+				alpha = 0;
+			if(alpha>1)
+				alpha = 1;
+			graphics.setPaint(new Color(0.F,0.F,0.F,1-shade));
+			graphics.fill(p);
+
+		} else{
+
+			// applies a shade to the current triangle based on the angle of the vectors. 
+			// maybe call the color a different way to get a larger variety of colors, instead of 255.
+			if(shade<=1&&shade>=0){
+
+				Color C = Color.getHSBColor((float)(.47*shade), (float)(.75*shade),(float)(.9*shade));
+				graphics.setPaint(C);
+			}
+			else{  
+				shade=0.1F;
+
+				Color C = Color.getHSBColor((float)(.47*.1), (float)(.75*.1),(float)(.9*.1));
+				graphics.setPaint(C);
+			}
+			//int alpha = Math.abs((int)(255-factor)) > 255 ? 255 : Math.abs((int)(255-factor));
+			//Color C = new Color(0,0,0,alpha);
+			//graphics.setPaint(C);
+			graphics.fill(p);
+		}
+		
+	}
+
+	private float shadeTriangle(Point3D lightSource, Triangle3D face){
+		/* need a vector from light to center of the face of the object
+		 * need normal vector from surface
+		 * normalize the vectors
+		 * then
+		 * cos(theta) = N dot L   theta will be between 0 and 1
+		 * 
+		 */
+
+		Point3D p0 = face.points[0];
+		Point3D p1 = face.points[1];
+		Point3D p2 = face.points[2];
+		double x = (p0.x+p1.x+p2.x)/3;
+		double y = (p0.y+p1.y+p2.y)/3;
+		double z = (p0.z+p1.z+p2.z)/3;
+		Point3D centerFace = new Point3D(x,y,z);
+
+		// the light vector, vector from triangle to light source, so norm and lv are in the same direction
+		Point3D lv = new Point3D(lightSource.x-centerFace.x,lightSource.y-centerFace.y,lightSource.z-centerFace.z);
+		Point3D sideA = new Point3D(p0.x-p1.x,p0.y-p1.y,p0.z-p1.z);
+		Point3D sideB = new Point3D(p0.x-p2.x,p0.y-p2.y,p0.z-p2.z);
+		Point3D norm = vectorCross(sideA,sideB);
+		norm = normalizeVect(norm);
+		lv = normalizeVect(lv);
+
+		double cosTheta = dotProduct(lv,norm);
+		return (float)cosTheta;
+	}
+
+	private Point3D vectorCross(Point3D A, Point3D B){
+		double z = A.x*B.y-A.y*B.x;
+		double x = A.y*B.z-A.z*B.y;
+		double y = A.z*B.x-A.x*B.z;
+		Point3D norm = new Point3D(x,y,z);
+		return norm;
+	}
+
+	private Point3D normalizeVect(Point3D v){
+		double mag = Math.sqrt(v.x*v.x+v.y*v.y+v.z*v.z);
+		Point3D rv = new Point3D(v.x/mag,v.y/mag,v.z/mag);
+		return rv;
+	}
+
+	private double dotProduct(Point3D a,Point3D b){
+		double rv = a.x*b.x+a.y*b.y+a.z*b.z;
+		return rv;
+	}
 
     private void renderObject(EnvironmentObject o, Graphics2D graphics){
         DSArrayList<Triangle3D> objectTriangles = o.getTriangles();
@@ -144,7 +319,7 @@ public class Environment {
     }
 
     public void moveBackward(){
-        double[] cp = {cameraPos[0] + Math.sin(cameraAngle), cameraPos[1] - Math.cos(cameraAngle), 0, 0};
+        double[] cp = {cameraPos[0] + Math.sin(cameraAngle), cameraPos[1] - Math.cos(cameraAngle), cameraPos[2], 0};
         cameraPos = cp;
         //System.out.printf("Camera pos: (%.2f, %.2f, %.2f) ", cameraPos[0], cameraPos[1], cameraPos[2]);
         //System.out.printf("%.2f  ", cameraAngle * 180 / Math.PI);
@@ -153,7 +328,7 @@ public class Environment {
     }
 
     public void moveForward(){
-        double[] cp = {cameraPos[0] - Math.sin(cameraAngle), cameraPos[1] + Math.cos(cameraAngle), 0, 0};
+        double[] cp = {cameraPos[0] - Math.sin(cameraAngle), cameraPos[1] + Math.cos(cameraAngle), cameraPos[2], 0};
         cameraPos = cp;
         updateTransform();
     }
@@ -166,6 +341,57 @@ public class Environment {
         near += 0.1;
     }
     
+		public void moveUp(){
+		cameraPos[2] += 0.5;
+		updateTransform();
+	}
+
+	public void moveDown(){
+		cameraPos[2] -= 0.5;
+		updateTransform();
+	}
+	public void moveLightNorth(){
+		lightSource = lightSource.translate(0, 1, 0);
+	}
+
+	public void moveLightSouth(){
+		lightSource = lightSource.translate(0, -1, 0);
+	}
+	public void moveLightEast(){
+		lightSource = lightSource.translate(1, 0, 0);
+	}
+
+	public void moveLightWest(){
+		lightSource = lightSource.translate(-1, 0, 0);
+	}
+
+	public void moveLightUp(){
+		lightSource = lightSource.translate(0, 0, 1);
+	}
+
+	public void moveLightDown(){
+		if(lightSource.z > -10)
+			lightSource = lightSource.translate(0, 0, -1);
+		else
+			return;
+	}
+
+	public void summonLight(){
+		lightSource = new Point3D(cameraPos[0],cameraPos[1],cameraPos[2]);
+	}
+
+	public void moveLight(Point3D pts){
+		lightSource = pts;
+	}
+
+	public void teleport(){
+		cameraPos[0] = lightSource.x;
+		cameraPos[1] = lightSource.y;
+		cameraPos[2] = lightSource.z;
+		updateTransform();
+
+	}
+	
     private void updateTransform(){
         double[][] newTransform = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0},
                 {-cameraPos[0], -cameraPos[1], -cameraPos[2], 1}};
