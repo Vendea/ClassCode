@@ -21,17 +21,18 @@ import java.util.Collections;
 import javax.imageio.ImageIO;
 
 
+
 public class Environment {
-    int WIDTH = 800;
-    int HEIGHT = 600;
-    DSArrayList<Point2D.Double> points;
-    DSArrayList<Triangle3D> triangles;
-    ArrayList<EnvironmentObject> objects;
-    double[][] transform = {{1,0,0,0},{0,1,0,0},{0,0,1,0}, {0, 0, 0, 1}};
-    Rectangle r = new Rectangle(WIDTH,HEIGHT);
-	
-	Graphics2D graphics;            //NOT USED     // The rendering context
-    
+	int WIDTH = 800;
+	int HEIGHT = 600;
+	DSArrayList<Point2D.Double> points;
+	ArrayList<Triangle3D> triangles;
+	ArrayList<EnvironmentObject> objects;
+	double[][] transform = {{1,0,0,0},{0,1,0,0},{0,0,1,0}, {0, 0, 0, 1}};
+	Rectangle r = new Rectangle(WIDTH,HEIGHT);
+
+	Graphics2D graphics;     //NOT USED            // The rendering context
+
 	//buffered image for texturing
 	public BufferedImage loadTheImage(){
 		BufferedImage img = null;
@@ -52,50 +53,53 @@ public class Environment {
 			, BufferedImage.TYPE_BYTE_INDEXED, colorModel);*/
 	//BufferedImage textureimg = loadTheImage();
 	//TexturePaint TEXTURE = new TexturePaint(textureimg, r);
-	
+
 	GradientPaint gradient = new GradientPaint(10,10, Color.white, 50,50, Color.blue, true);
 	Point2D.Double cameraLocation;
-    Point2D.Double cameraDirection;
-    double[][] leftRotationMatrix;
-    double[][] rightRotationMatrix;
-    double[][] moveForwardMatrix;
-    double[][] moveBackwardMatrix;
+	Point2D.Double cameraDirection;
+	double[][] leftRotationMatrix;
+	double[][] rightRotationMatrix;
+	double[][] moveForwardMatrix;
+	double[][] moveBackwardMatrix;
+
+
+	/**
+	 * kind of working.....
+	 * if the light source is outside the frame it works.
+	 * if he light source is directly above the center, half lights up and half is dark....
+	 */
 
 	Point3D lightSource = new Point3D(1,1,1);
-	
-    // Locations of the view frustrum planes
-    double near = 1;
-    double left = -1;
-    double right = +1;
-    double top = 1;
-    double bottom = -1;
-    
-    // Camera position
-    double[] cameraPos = {0, 0, 0, 1};
-    double   cameraAngle = 0;
-    double   angleStep = 0.05;
 
-    public Environment(){
-        triangles = new DSArrayList<Triangle3D>();
-        objects = new ArrayList<EnvironmentObject>();
-        points = new DSArrayList<Point2D.Double>();
-        leftRotationMatrix = makeLRRotation(-angleStep);
-        rightRotationMatrix = makeLRRotation(angleStep);
-        moveForwardMatrix = makeFBMatrix(-1);
-        moveBackwardMatrix = makeFBMatrix(1);
-    }
+	// Locations of the view frustrum planes
+	double near = 1;
+	double left = -1;
+	double right = +1;
+	double top = 1;
+	double bottom = -1;
 
-    public void render(Graphics2D graphics){
-       /* graphics.setColor(Color.DARK_GRAY);
-        graphics.fillRect(0, 0, WIDTH, WIDTH);
-        graphics.setColor(Color.WHITE);*/
-		
-        //testing gradient painting on background
+	// Camera position
+	double[] cameraPos = {0, 0, 0, 1};
+	double   cameraAngle = 0;
+	double   angleStep = 0.05;
 
-		
+	public Environment(){
+		triangles = new ArrayList<Triangle3D>();
+		objects = new ArrayList<EnvironmentObject>();
+		points = new DSArrayList<Point2D.Double>();
+		leftRotationMatrix = makeLRRotation(-angleStep);
+		rightRotationMatrix = makeLRRotation(angleStep);
+		moveForwardMatrix = makeFBMatrix(-1);
+		moveBackwardMatrix = makeFBMatrix(1);
+	}
+
+	public void render(Graphics2D graphics){
+		//testing gradient painting on background
+
+
 		graphics.setPaint(gradient);
 		graphics.fillRect(0, 0, WIDTH, HEIGHT);
-		
+
 		//transparency based on height of light source
 		float alpha = (float) ((lightSource.z+8)/10);
 		if(alpha>1.0)
@@ -106,70 +110,73 @@ public class Environment {
 		graphics.fillRect(0, 0, WIDTH, HEIGHT);
 
 		graphics.setColor(Color.WHITE);
-		
-        // Render the triangles
-        for(int i = 0; i < triangles.size(); i++)
-            if(triangleIsVisible(triangles.get(i)) && triangleIsFacingCamera(triangles.get(i)))
-                renderTriangle(triangles.get(i), graphics);
-        
-        // Render the EnvironmentObjects
-        EnvironmentObject.cameraPos = new Point3D(cameraPos[0], cameraPos[1], 0);
-        Collections.sort(objects);
-        for(int i = 0; i < objects.size(); i++)
-            renderObject(objects.get(i), graphics);
-    }
-    
-    private boolean triangleIsVisible(Triangle3D t){
-        Point2D.Double cameraVec = new Point2D.Double(-Math.sin(cameraAngle), Math.cos(cameraAngle));
-        for(int i = 0; i < 3; i++){
-            if((t.points[i].x - cameraPos[0])*cameraVec.x + (t.points[i].y - cameraPos[1])*cameraVec.y < 0)
-                return false;
-        }
-        return true;
-    }
-    
-    private boolean triangleIsFacingCamera(Triangle3D t){
-        return sigmaVal(t.points[0], t.points[1], t.points[2],
-                new Point3D(cameraPos[0], cameraPos[1], 0)) > 0;
-                
-    }
 
-    private void renderTriangle(Triangle3D t, Graphics2D graphics){
-        Point2D.Double[] pts = new Point2D.Double[3]; // 2D coords of projected triangles
-        double[] x = new double[3];                      // Same thing, different form
-        double[] y = new double[3];                      // ""
+		// Render the triangles
+		Triangle3D.cameraPos = new Point3D(cameraPos[0], cameraPos[1], cameraPos[2]);
+		Collections.sort(triangles);
+		for(int i = 0; i < triangles.size(); i++)
+			if(triangleIsVisible(triangles.get(i)) && triangleIsFacingCamera(triangles.get(i)))
+				renderTriangle(triangles.get(i), graphics);
+
+		// Render the EnvironmentObjects
+		EnvironmentObject.cameraPos = new Point3D(cameraPos[0], cameraPos[1], cameraPos[2]);
+		Collections.sort(objects);
+		for(int i = 0; i < objects.size(); i++)
+			renderObject(objects.get(i), graphics);
+	}
+
+	private boolean triangleIsVisible(Triangle3D t){
+		Point2D.Double cameraVec = new Point2D.Double(-Math.sin(cameraAngle), Math.cos(cameraAngle));
+		for(int i = 0; i < 3; i++){
+			if((t.points[i].x - cameraPos[0])*cameraVec.x + (t.points[i].y - cameraPos[1])*cameraVec.y < 0)
+				return false;
+		}
+		return true;
+	}
+
+	private boolean triangleIsFacingCamera(Triangle3D t){
+		return sigmaVal(t.points[0], t.points[1], t.points[2],
+				new Point3D(cameraPos[0], cameraPos[1], cameraPos[2])) > 0;
+
+	}
+
+	private void renderTriangle(Triangle3D t, Graphics2D graphics){
+		Point2D.Double[] pts = new Point2D.Double[3]; // 2D coords of projected triangles
+		double[] x = new double[3];                      // Same thing, different form
+		double[] y = new double[3];                      // ""
 		Path2D.Double p = new Path2D.Double();
-		
-        // Transform them points from the 3D world to the 2D screen
-        for(int i = 0; i < 3; i++){
-            pts[i] = project(t.points[i]);
-            x[i] = pts[i].x * WIDTH;
-            y[i] = HEIGHT - pts[i].y * HEIGHT;
-        }
 
-        // Draw the outlines of the triangles
-        /*graphics.setColor(Color.red);
-        for(int i = 0; i < 3; i++)
-            graphics.drawLine((int)x[i], (int)y[i], (int)x[(i+1)%3], (int)y[(i+1)%3]);*/
-        
-        // Draw the interiors of the triangles
-		
+		// Transform them points form the 3D world to the 2D screen
+		for(int i = 0; i < 3; i++){
+			pts[i] = project(t.points[i]);
+			x[i] = pts[i].x * WIDTH;
+			y[i] = HEIGHT - pts[i].y * HEIGHT;
+		}
+
+		// Draw the outlines of the triangles
+		//graphics.setColor(Color.red);
+		//for(int i = 0; i < 3; i++)
+			//graphics.drawLine((int)x[i], (int)y[i], (int)x[(i+1)%3], (int)y[(i+1)%3]);
+
+		// Draw the interiors of the triangles
+
 		//get the shading from normalize vectors, create 2D shape for graphics to fill
-		
-        float shade = shadeTriangle(lightSource, t);
-        p.moveTo(x[0], y[0]);
-        p.lineTo(x[1], y[1]);
-        p.lineTo(x[2], y[2]);
-        p.closePath();
+		float shade = shadeTriangle(lightSource,t);
+		p.moveTo(x[0], y[0]);
+		p.lineTo(x[1], y[1]);
+		p.lineTo(x[2], y[2]);
+		p.closePath();
+
+		//if light is below the plane, everything should be dark
 		if(lightSource.z<-8){
 			graphics.setPaint(Color.black);
 			graphics.fill(p);
-			
+
 			return;
-    }
-	
+		}
+
 		Point3D[] test = t.getHypotenuse();
-		Point3D midpoint = new Point3D(test[0].x/2+test[1].x/2, 
+		Point3D midpoint = new Point3D(test[0].x/2+test[1].x/2,
 				test[0].y/2+test[1].y/2, test[0].z/2+ test[1].z/2);
 		double a = midpoint.x-cameraPos[0];
 		double b = midpoint.y-cameraPos[1];
@@ -178,7 +185,7 @@ public class Environment {
 		double d = midpoint.x-lightSource.x;
         double e = midpoint.y-lightSource.y;
 		double f = midpoint.z-lightSource.z;
-		
+
 		if(!t.onFloor){
 			double factor;
 
@@ -195,11 +202,11 @@ public class Environment {
 							factor, factor));
 			graphics.setPaint(texture);
 			graphics.fill(p);*/
-			
+
 			graphics.setPaint(Color.red);
 			graphics.fill(p);
-			
-			float distshade = (float)(1/Math.sqrt((d*d)+(e*e)+(f*f)));			
+
+			float distshade = (float)(1/Math.sqrt((d*d)+(e*e)+(f*f)));
 			if(shade>1 || shade<0)
 				shade = 0.1F;
 			float alpha = shade+distshade;
@@ -212,14 +219,14 @@ public class Environment {
 
 		} else{
 
-			// applies a shade to the current triangle based on the angle of the vectors. 
+			// applies a shade to the current triangle based on the angle of the vectors.
 			// maybe call the color a different way to get a larger variety of colors, instead of 255.
 			if(shade<=1&&shade>=0){
 
 				Color C = Color.getHSBColor((float)(.47*shade), (float)(.75*shade),(float)(.9*shade));
 				graphics.setPaint(C);
 			}
-			else{  
+			else{
 				shade=0.1F;
 
 				Color C = Color.getHSBColor((float)(.47*.1), (float)(.75*.1),(float)(.9*.1));
@@ -230,7 +237,7 @@ public class Environment {
 			//graphics.setPaint(C);
 			graphics.fill(p);
 		}
-		
+
 	}
 
 	private float shadeTriangle(Point3D lightSource, Triangle3D face){
@@ -239,7 +246,7 @@ public class Environment {
 		 * normalize the vectors
 		 * then
 		 * cos(theta) = N dot L   theta will be between 0 and 1
-		 * 
+		 *
 		 */
 
 		Point3D p0 = face.points[0];
@@ -281,67 +288,69 @@ public class Environment {
 		return rv;
 	}
 
-    private void renderObject(EnvironmentObject o, Graphics2D graphics){
-        DSArrayList<Triangle3D> objectTriangles = o.getTriangles();
-        for(int ti = 0; ti < objectTriangles.size(); ti++)
-            if(triangleIsVisible(objectTriangles.get(ti)) &&
-                    triangleIsFacingCamera(objectTriangles.get(ti)))
-                renderTriangle(objectTriangles.get(ti), graphics);
-    }
+	private void renderObject(EnvironmentObject o, Graphics2D graphics){
+		DSArrayList<Triangle3D> objectTriangles = o.getTriangles();
+		for(int ti = 0; ti < objectTriangles.size(); ti++)
+			if(triangleIsVisible(objectTriangles.get(ti)) &&
+					triangleIsFacingCamera(objectTriangles.get(ti)))
+				renderTriangle(objectTriangles.get(ti), graphics);
+	}
 
-    private Point2D.Double project(Point3D q){
-        // First we transform the point in 3-space
-        Point3D p = new Point3D(vecMatMultiply(q.getCoords(), transform));
-        Point2D.Double rv = new Point2D.Double();
-        double x = (near*(p.x/p.y) - left)/(right - left);
-        double y = (near*(p.z/p.y) - bottom)/(top - bottom);
-        rv.x = x;
-        rv.y = y;
-        return rv;
-    }
+	private Point2D.Double project(Point3D q){
+		// First we transform the point in 3-space
+		Point3D p = new Point3D(vecMatMultiply(q.getCoords(), transform));
+		Point2D.Double rv = new Point2D.Double();
+		double x = (near*(p.x/p.y) - left)/(right - left);
+		double y = (near*(p.z/p.y) - bottom)/(top - bottom);
+		rv.x = x;
+		rv.y = y;
+		return rv;
+	}
 
-    public void addTriangle(Triangle3D t){
-        triangles.add(t);
-    }
+	public void addTriangle(Triangle3D t){
+		triangles.add(t);
+	}
 
-    public void addObject(EnvironmentObject o){
-        objects.add(o);
-    }
+	public void addObject(EnvironmentObject o){
+		objects.add(o);
+	}
 
-    public void rotateRight(){
-        cameraAngle -= angleStep;
-        updateTransform();
-    }
+	public void rotateRight(){
+		cameraAngle -= angleStep;
+		updateTransform();
+	}
 
-    public void rotateLeft(){
-        cameraAngle += angleStep;
-        updateTransform();
-    }
+	public void rotateLeft(){
+		cameraAngle += angleStep;
+		updateTransform();
+	}
 
-    public void moveBackward(){
-        double[] cp = {cameraPos[0] + Math.sin(cameraAngle), cameraPos[1] - Math.cos(cameraAngle), cameraPos[2], 0};
-        cameraPos = cp;
-        //System.out.printf("Camera pos: (%.2f, %.2f, %.2f) ", cameraPos[0], cameraPos[1], cameraPos[2]);
-        //System.out.printf("%.2f  ", cameraAngle * 180 / Math.PI);
-        //System.out.printf("Camera pos: (%.2f, %.2f, %.2f)\n", cameraDir[0], cameraDir[1], cameraDir[2]);
-        updateTransform();
-    }
+	public void moveBackward(){
+		double[] cp = {cameraPos[0] + Math.sin(cameraAngle), cameraPos[1] - Math.cos(cameraAngle),
+				cameraPos[2], 0};
+		cameraPos = cp;
+		//System.out.printf("Camera pos: (%.2f, %.2f, %.2f) ", cameraPos[0], cameraPos[1], cameraPos[2]);
+		//System.out.printf("%.2f  ", cameraAngle * 180 / Math.PI);
+		//System.out.printf("Camera pos: (%.2f, %.2f, %.2f)\n", cameraDir[0], cameraDir[1], cameraDir[2]);
+		updateTransform();
+	}
 
-    public void moveForward(){
-        double[] cp = {cameraPos[0] - Math.sin(cameraAngle), cameraPos[1] + Math.cos(cameraAngle), cameraPos[2], 0};
-        cameraPos = cp;
-        updateTransform();
-    }
-    
-    public void nearCloser(){
-        near -= 0.1;
-    }
-    
-    public void nearFarther(){
-        near += 0.1;
-    }
-    
-		public void moveUp(){
+	public void moveForward(){
+		double[] cp = {cameraPos[0] - Math.sin(cameraAngle), cameraPos[1] + Math.cos(cameraAngle),
+				cameraPos[2], 0};
+		cameraPos = cp;
+		updateTransform();
+	}
+
+	public void nearCloser(){
+		near -= 0.1;
+	}
+
+	public void nearFarther(){
+		near += 0.1;
+	}
+
+	public void moveUp(){
 		cameraPos[2] += 0.5;
 		updateTransform();
 	}
@@ -391,58 +400,58 @@ public class Environment {
 		updateTransform();
 
 	}
-	
-    private void updateTransform(){
-        double[][] newTransform = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0},
-                {-cameraPos[0], -cameraPos[1], -cameraPos[2], 1}};
-        transform = matMatMultiply(newTransform, makeLRRotation(-cameraAngle));
-    }
 
-    private double[][] matMatMultiply(double[][] m1, double[][] m2){
-        double[][] newMat = new double[4][4];
+	private void updateTransform(){
+		double[][] newTransform = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0},
+				{-cameraPos[0], -cameraPos[1], -cameraPos[2], 1}};
+		transform = matMatMultiply(newTransform, makeLRRotation(-cameraAngle));
+	}
 
-        for(int i = 0; i < 4; i++)
-            for(int j = 0; j < 4; j++)
-                for(int k = 0; k < 4; k++)
-                    newMat[i][j] += m1[i][k] * m2[k][j];
-        return newMat;
-    }
+	private double[][] matMatMultiply(double[][] m1, double[][] m2){
+		double[][] newMat = new double[4][4];
 
-    private double[] vecMatMultiply(double[] v, double[][]m){
-        double newVec[] = new double[4];
-        for(int j = 0; j < 4; j++)
-            for(int k = 0; k < 4; k++)
-                newVec[j] += v[k] * m[k][j];
-        return newVec;
+		for(int i = 0; i < 4; i++)
+			for(int j = 0; j < 4; j++)
+				for(int k = 0; k < 4; k++)
+					newMat[i][j] += m1[i][k] * m2[k][j];
+		return newMat;
+	}
 
-    }
-    
-    // Returns v1 + m*v2
-    private double[] vecVecMultAndAdd(double[] v1, double m, double[] v2){
-        double[] rv = {v1[0] + m*v2[0], v1[1] + m*v2[1], v1[2] + m*v2[2], v1[3] + m*v2[3]};
-        return rv;
-    }
+	private double[] vecMatMultiply(double[] v, double[][]m){
+		double newVec[] = new double[4];
+		for(int j = 0; j < 4; j++)
+			for(int k = 0; k < 4; k++)
+				newVec[j] += v[k] * m[k][j];
+		return newVec;
 
-    private double[][] makeLRRotation(double angle){
-        double rv[][] =  {
-                {Math.cos(angle), Math.sin(angle), 0, 0},
-                {-Math.sin(angle), Math.cos(angle), 0, 0},
-                {0, 0, 1, 0}, {0, 0, 0, 1}};
-        return rv;
-    }
+	}
 
-    private double[][] makeFBMatrix(double distance){
-        double rv[][] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, distance, 0, 1}};
-        return rv;
-    }
-    
-    private double sigmaVal(Point3D A, Point3D B, Point3D C, Point3D D){
-        Point3D b = B.multAndAdd(-1, A);
-        Point3D c = C.multAndAdd(-1, A);
-        Point3D d = D.multAndAdd(-1, A);
-        
-        return b.x*c.y*d.z + b.y*c.z*d.x + b.z*c.x*d.y -
-                b.z*c.y*d.x - b.y*c.x*d.z - b.x*c.z*d.y;
-    }
+	// Returns v1 + m*v2
+	private double[] vecVecMultAndAdd(double[] v1, double m, double[] v2){
+		double[] rv = {v1[0] + m*v2[0], v1[1] + m*v2[1], v1[2] + m*v2[2], v1[3] + m*v2[3]};
+		return rv;
+	}
+
+	private double[][] makeLRRotation(double angle){
+		double rv[][] =  {
+				{Math.cos(angle), Math.sin(angle), 0, 0},
+				{-Math.sin(angle), Math.cos(angle), 0, 0},
+				{0, 0, 1, 0}, {0, 0, 0, 1}};
+		return rv;
+	}
+
+	private double[][] makeFBMatrix(double distance){
+		double rv[][] = {{1, 0, 0, 0}, {0, 1, 0, 0}, {0, 0, 1, 0}, {0, distance, 0, 1}};
+		return rv;
+	}
+
+	private double sigmaVal(Point3D A, Point3D B, Point3D C, Point3D D){
+		Point3D b = B.multAndAdd(-1, A);
+		Point3D c = C.multAndAdd(-1, A);
+		Point3D d = D.multAndAdd(-1, A);
+
+		return b.x*c.y*d.z + b.y*c.z*d.x + b.z*c.x*d.y -
+				b.z*c.y*d.x - b.y*c.x*d.z - b.x*c.z*d.y;
+	}
 
 }
