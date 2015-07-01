@@ -1,3 +1,5 @@
-/geo/
 /geometry/
-/.gitignore
+/geometry3D/
+/progteam/
+.gitignore
+*.class
