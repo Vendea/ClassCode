@@ -658,6 +658,11 @@ public class BattleKath implements ActionListener{
 				gameClient.declareDraw();
 				break;
 			}
+			if(e == TwoPlayer.DRAW){
+				System.out.println("Draw");
+				gameClient.declareDraw();
+				break;
+			}
 		}
 		gameClient.shutdown();
 		gameClient = null;
