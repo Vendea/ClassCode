@@ -49,7 +49,7 @@ public class TicTacToe extends TwoPlayer{
 	/**
 	 * This gives the character that is in our input template
 	 * based on what is in the board
-	 * 
+	 *
 	 * @param row
 	 * @param col
 	 * @return number of space if available or blank if space is not available
@@ -59,7 +59,7 @@ public class TicTacToe extends TwoPlayer{
 		if(board[row][col] == ' '){
 			//48 is the ASCII value for char 0
 			return (char)(candidateValue + 48);
-		} 
+		}
 		else{
 			return ' ';
 		}
@@ -75,7 +75,7 @@ public class TicTacToe extends TwoPlayer{
 	void humanMove(int turn){
 		int row, move, col;
 		System.out.println("What is player " + whoseTurn + "'s move?");
-		do{	
+		do{
 			String temp = scanner.next();
 			boolean valid = temp.matches("^[1-9]$");
 			while(!valid){
@@ -90,8 +90,8 @@ public class TicTacToe extends TwoPlayer{
 			if (board[row][col] != ' '){
 				System.out.println("That space is already taken.  Please try again.");
 			}
-		} 
-		while(board[row][col] != ' ');  
+		}
+		while(board[row][col] != ' ');
 
 		char moveChar;
 		if(whoseTurn == 1)
@@ -105,7 +105,7 @@ public class TicTacToe extends TwoPlayer{
 	/**
 	 * This method is called when computerMove() can't compute a winning move
 	 * It moves player 'turn' randomly
-	 * 
+	 *
 	 * @param turn    - gives whose turn it is
 	 */
 	void computerRandomMove(int turn){
@@ -131,7 +131,7 @@ public class TicTacToe extends TwoPlayer{
 		numMoves++;
 	}
 
-	//smart version.  
+	//smart version.
 	void computerMove(int turn){
 		char moveChar;
 		if(turn == 1)
@@ -207,7 +207,7 @@ public class TicTacToe extends TwoPlayer{
 			return PLAYER2WIN;
 		if(numMoves == 9)
 			return DRAW;
-		else 
+		else
 			return CONTINUE;
 	}
 

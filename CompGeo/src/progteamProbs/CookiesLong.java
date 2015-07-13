@@ -1,4 +1,4 @@
-package geometry;
+package progteamProbs;
 
 import java.awt.Point;
 import java.awt.geom.Point2D;
@@ -8,7 +8,7 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Scanner;
 
-class Cookies {
+class CookiesLong {
 	public static Scanner scanner = new Scanner(System.in);
 
 	public static void main(String[] args) {

@@ -1,4 +1,4 @@
-package geometry;
+package progteamProbs;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -55,6 +55,4 @@ class RopeCrisis {
 		double arc = R * smallAngle;
 		System.out.printf("%.3f\n", d1 + d2 + arc);
 	}
-
-
 }

@@ -8,6 +8,7 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.util.ArrayList;
 
+
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
@@ -88,7 +89,7 @@ public class BattleshipMineCopy implements ActionListener{
 
 		shipArrayOne = new int[10][10];
 		shipArrayTwo = new int[10][10];
-		
+
 		statusOne = new JFrame("Player One - ship hitpoints");
 		statusOne.setSize(new Dimension(400, 200));
 		statusOne.setLocation(200, 650);
@@ -162,7 +163,7 @@ public class BattleshipMineCopy implements ActionListener{
 				attackShipButtonTwo[i][j].setText(rowLabel[i].getText()+columnLabel[j].getText());
 				shipButtonOne[i][j].setText(rowLabel[i].getText()+columnLabel[j].getText());
 				shipButtonTwo[i][j].setText(rowLabel[i].getText()+columnLabel[j].getText());
-			}			
+			}
 		}
 
 		centerPanel.setLayout(new GridLayout(11, 11));
@@ -171,13 +172,13 @@ public class BattleshipMineCopy implements ActionListener{
 		centerPanelTwo.add(topLeftBlankTwo);
 		attackcenterPanel.setLayout(new GridLayout(11, 11));
 		attackcenterPanelTwo.setLayout(new GridLayout(11,11));
-		attackcenterPanel.add(attacktopLeftBlank);  
+		attackcenterPanel.add(attacktopLeftBlank);
 		attackcenterPanelTwo.add(attacktopLeftBlankTwo);
 
 		for(int i = 0; i< 10; i++){
 			centerPanel.add(columnLabel[i]);
 			centerPanelTwo.add(columnLabelTwo[i]);
-			attackcenterPanel.add(attackcolumnLabelOne[i]);	
+			attackcenterPanel.add(attackcolumnLabelOne[i]);
 			attackcenterPanelTwo.add(attackcolumnLabelTwo[i]);
 		}
 
@@ -229,7 +230,7 @@ public class BattleshipMineCopy implements ActionListener{
 		attackBoardGUITwo.setVisible(false);
 		Object[] options = {"One Player", "Two Players"};
 		int n = JOptionPane.showOptionDialog(null, "How many players?",
-				"Start Game", JOptionPane.YES_NO_OPTION, 
+				"Start Game", JOptionPane.YES_NO_OPTION,
 				JOptionPane.QUESTION_MESSAGE, null, options, options[0]);
 		patrolBoat = new Ship(2, "Patrol Boat", 0);
 		submarine = new Ship(3, "Submarine", 1);
@@ -248,7 +249,7 @@ public class BattleshipMineCopy implements ActionListener{
 				shipButtonTwo[i][j].setBackground(null);
 				attackShipButtonTwo[i][j].setBackground(null);
 				attackShipButtonTwo[i][j].setEnabled(false);
-			}	
+			}
 
 		if(n == JOptionPane.NO_OPTION){
 			cplay = false;
@@ -277,7 +278,7 @@ public class BattleshipMineCopy implements ActionListener{
 		turn = 1;
 		JOptionPane.showMessageDialog(null,"Click a square to start placing your ships "
 				+ "beginning with the smallest ship, the Patrol Boat.",
-				"Begin battleship - place ships", JOptionPane.INFORMATION_MESSAGE);	
+				"Begin battleship - place ships", JOptionPane.INFORMATION_MESSAGE);
 
 	}
 
@@ -364,7 +365,7 @@ public class BattleshipMineCopy implements ActionListener{
 
 		//set rv:
 		if(!up&&!down&&!left&&!right)
-			rv = false;		
+			rv = false;
 		else
 			rv = true;
 
@@ -496,7 +497,7 @@ public class BattleshipMineCopy implements ActionListener{
 					return;
 				}
 				else
-					return;			
+					return;
 			}
 			if(t==2){
 				if(shipsPlaced == 5){
@@ -517,18 +518,18 @@ public class BattleshipMineCopy implements ActionListener{
 
 					myBoardGUITwo.setVisible(false);
 					System.out.println("Done placing ships.  Begin game play.");
-					JOptionPane.showMessageDialog(null, "Begin attacking opponent's ships", 
+					JOptionPane.showMessageDialog(null, "Begin attacking opponent's ships",
 							"Begin game play", JOptionPane.INFORMATION_MESSAGE);
 				}
 				else
-					return;				
-			}	
+					return;
+			}
 		}
 		resetGridForShips(t);
 	}
 
 	/**
-	 * 
+	 *
 	 * @param ident
 	 * @return the Ship corresponding to the ident
 	 */
@@ -568,7 +569,7 @@ public class BattleshipMineCopy implements ActionListener{
 								return;
 							play(turn, i, j);
 							if(numMoves >= 17){
-								int sw = endCheck();							
+								int sw = endCheck();
 								if(sw!=TwoPlayer.PLAYER1WIN && sw!= TwoPlayer.PLAYER2WIN){
 									holdUntil =-(sw)+holdUntil;
 									return;
@@ -576,7 +577,7 @@ public class BattleshipMineCopy implements ActionListener{
 								else{
 									JOptionPane.showMessageDialog(null, "Player "+sw+" wins Battleship!",
 											"Congratulations!", JOptionPane.INFORMATION_MESSAGE);
-									int n = JOptionPane.showConfirmDialog(null, "Do you want to play again?", 
+									int n = JOptionPane.showConfirmDialog(null, "Do you want to play again?",
 											"New Game", JOptionPane.YES_NO_OPTION);
 									if(n == JOptionPane.YES_OPTION)
 										newGame();
@@ -599,7 +600,7 @@ public class BattleshipMineCopy implements ActionListener{
 								else{
 									JOptionPane.showMessageDialog(null, "Player "+sw+" wins Battleship!",
 											"Congratulations!", JOptionPane.INFORMATION_MESSAGE);
-									int n = JOptionPane.showConfirmDialog(null, "Do you want to play again?", 
+									int n = JOptionPane.showConfirmDialog(null, "Do you want to play again?",
 											"New Game", JOptionPane.YES_NO_OPTION);
 									if(n == JOptionPane.YES_OPTION)
 										newGame();
@@ -619,7 +620,7 @@ public class BattleshipMineCopy implements ActionListener{
 				button = shipButtonOne;
 			else
 				button = shipButtonTwo;
-			if(!placingShips){	
+			if(!placingShips){
 				find:
 					for(int i=0;i<10;i++)
 						for(int j=0;j<10;j++)
@@ -631,7 +632,7 @@ public class BattleshipMineCopy implements ActionListener{
 									JOptionPane.showMessageDialog(null, "Ship doesn't fit there.",
 											"Error in Placement", JOptionPane.ERROR_MESSAGE);
 									return;
-								}	
+								}
 								checkShipPlace(turn,shipsPlaced, i, j,0);
 								break find;
 							}
@@ -687,7 +688,7 @@ public class BattleshipMineCopy implements ActionListener{
 				if(shipArrayTwo[i][j] == MISS){
 					attackShipButtonOne[i][j].setBackground(Color.BLUE);
 					attackShipButtonOne[i][j].setEnabled(false);
-				}					
+				}
 			}
 	}
 	void resetGridForShips(int t){
@@ -733,7 +734,7 @@ public class BattleshipMineCopy implements ActionListener{
 						if(s.returnRow(t,j) == srow && s.returnCol(t,j) == scol){
 							thing = s;
 							break find;
-						}	
+						}
 					}
 				}
 		attack[srow][scol] = HIT;
@@ -844,7 +845,7 @@ public class BattleshipMineCopy implements ActionListener{
 
 	ArrayList<String> ssss = new ArrayList<String>();
 	void cplayRandShips(){
-		int lrud = 0; 
+		int lrud = 0;
 		int srow = 0, scol = 0;
 		String num;
 		boolean thir = false;
@@ -881,7 +882,7 @@ public class BattleshipMineCopy implements ActionListener{
 						thir = false;
 					}
 				}
-			}while(!thir);			
+			}while(!thir);
 		}
 	}
 }

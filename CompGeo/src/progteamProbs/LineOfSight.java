@@ -1,4 +1,4 @@
-package geometry;
+package progteamProbs;
 
 import java.awt.Point;
 import java.util.ArrayList;
@@ -12,7 +12,7 @@ public class LineOfSight {
 	static double[][] obstacles;
 
 	public static void main(String[] args) {
-		
+
 		house[0] = scanner.nextDouble();
 		house[1] = scanner.nextDouble();
 		house[2] = scanner.nextDouble();
@@ -23,13 +23,13 @@ public class LineOfSight {
 			house[2] = scanner.nextDouble();
 		}
 	}
-	
+
 	public static void solveOneProblem(){
 		property[0] = scanner.nextDouble();
 		property[1] = scanner.nextDouble();
 		property[2] = scanner.nextDouble();
 		double IGNORE = 1342.18478934719;
-		
+
 		// Read the obstacles
 		int N = scanner.nextInt();
 		obstacles = new double[N][3];

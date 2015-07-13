@@ -2,19 +2,19 @@ package ds1;
 
 import java.util.Iterator;
 public class DSArrayList<E> implements Iterable<E> {
-    
+
     /**
      * Holds the items in the DSArrayList.
      */
     private E[] array;
-    
+
     /**
      * Set within the constructor.
      * Keeps track of the size of the DSArrayList
      * each time an element is added.
      */
     private int numItems;
-    
+
     /**
      * Creates a DSArrayList with room for 10 items.
      */
@@ -23,7 +23,7 @@ public class DSArrayList<E> implements Iterable<E> {
         array = (E[])(new Object[10]);
         numItems = 0;
     }
-    
+
     /**
      * Creates a DSArrayList.
      * @param capacity
@@ -34,7 +34,7 @@ public class DSArrayList<E> implements Iterable<E> {
         array = (E[])(new Object[capacity]);
         numItems = 0;
     }
-    
+
     /**
      * Creates a new DSArrayList from the
      * arguments provided (or an array).
@@ -45,13 +45,13 @@ public class DSArrayList<E> implements Iterable<E> {
         this.array = things;
         numItems = things.length;
     }
-    
+
     public E[] quickDelete(int i){
     	this.numItems = this.array.length -1;
     	this.array[i] = null;
-    	return array;    	
+    	return array;
     }
-    
+
     /**
      * Adds an item to the DSArrayList.
      * Enlarges the array as neccessary.
@@ -95,6 +95,24 @@ public class DSArrayList<E> implements Iterable<E> {
         return numItems;
     }
 
+    /**
+     * @author KatherineMJB
+     * @Override java.lang.Object.toString()
+     */
+    public String toString(){
+      String list = "[";
+      for(int i = 0; i < numItems; i++){
+
+        list += get(i);
+        if(i+1 < numItems){
+          list +=  ",";
+        }
+      }
+      list += "]";
+      return list;
+
+    }
+
     /*
      * Places something in an existing and occupied slot
      * in the DSArrayList, replacing the old item.
@@ -136,12 +154,12 @@ public class DSArrayList<E> implements Iterable<E> {
 
         };
     }
-    
+
     public void append(DSArrayList<E> toAppend) {
         for (E item : toAppend)
             add(item);
     }
-    
+
     /**
      * Determines whether the DSArrayList contains
      * a specified element. Returns true if
@@ -157,33 +175,33 @@ public class DSArrayList<E> implements Iterable<E> {
             if ((item == null && otherItem == null) ||
                     item.equals(otherItem))
                 return true;
-        
+
         return false;
     }
-    
+
     @SuppressWarnings("unchecked")
     @Override
     public boolean equals(Object obj) {
         if (!(obj instanceof DSArrayList))
             return false;
-        
+
         DSArrayList<E> arrList;
-        
+
         try {
             arrList = (DSArrayList<E>) obj;
         } catch (ClassCastException err) {
             return false;
         }
-        
+
         if (!(arrList.size() == numItems))
             return false;
-        
+
         for (int i = 0; i < numItems; i++)
             if (!((array[i] == null && arrList.get(i) == null) ||
                     array[i].equals(arrList.get(i))))
                 return false;
-        
+
         return true;
     }
-    
-} 
+
+}

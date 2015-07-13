@@ -1,5 +1,6 @@
 package progteamProbs;
 
+import java.awt.geom.Line2D;
 import java.text.DecimalFormat;
 import java.util.Scanner;
 
@@ -41,7 +42,7 @@ public class MyRopePulling {
 		 * x^2 + c^2 + 2*c*mx + mx*mx - r^2 = 0
 		 * (m*m+1)*x^2 + (2*c*m)*x + c*c-r*r = 0
 		 * x = K
-		 * 
+		 *
 		 */
 		//Line2D lin = new Line2D.Double(x1,y1,x2,y2);
 		double m = (y1-y2)/(x1-x2);
