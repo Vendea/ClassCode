@@ -1,4 +1,4 @@
-package temp;
+package geometry;
 
 import javax.swing.*;
 import java.awt.*;
