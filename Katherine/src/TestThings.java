@@ -16,6 +16,9 @@ public class TestThings {
 		a[9] = '2';
 		//System.out.println(a[0].isNull());
 		System.out.println(a);
+		String printStatement = "Case " + 1 + ":" + '\n' + "Heeeeeyyyyy";
+		System.out.print(printStatement);
+		System.out.print("New");
 	}
 	
 	private static int gcd(int a, int b){
