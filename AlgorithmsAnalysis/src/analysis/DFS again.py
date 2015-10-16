@@ -63,16 +63,42 @@ def DFS-color2(g, u):
             DFS-color2(g, v)
     colored[u] = WHITE
     postvisit[u] = ++time
+    
+def hamiltonianPath(g):
+    if isConnected(g):
+        stack = []
+        fors = {v:0 for v in g}
+        colors = {v:WHITE for v in g}
+        #memoPath = {(u, v):[] for u in g for v in g}
+        
+        for v in g:
+            stack.append(v)
+            last = v
+            colors[v] = GRAY
 
-def hamiltonianDFS(g):
-    visited = {}
-    stack = []
+            while len(stack) > 0:
+                while fors[last] >= len(g[last]):
+                    x = stack.pop()                    
+                    if len(stack) == 0:
+                        return False
+                    fors[x] = 0
+                    colors[x] = WHITE
+                    last = stack.pop()
+                    stack.append(last)
+                    
+                nextv = g[last][fors[last]]
 
-    for u in g:
-        findallPaths(g, u)
-
-def findAllPaths(g, u):
-    print "null"
+                if colors[nextv] != WHITE:
+                    fors[last] = fors[last]+1
+                else:
+                    fors[last] = fors[last]+1
+                    stack.append(nextv)
+                    if len(stack) == len(g):
+                        return True
+                    colors[nextv] = GRAY
+                    fors[nextv] = 0
+                    last = nextv               
+    return False
 
 #just checks connectedness
 def DFSplain(g): 
