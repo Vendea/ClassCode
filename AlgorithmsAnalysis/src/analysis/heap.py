@@ -75,7 +75,7 @@ class heap:
         self.x = sorted
 
     def insertQ(self, name, value):
-        self.x.append(name)
+        self.x.append(value)
         self.minHeapify()
 
 
