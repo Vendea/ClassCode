@@ -5,6 +5,8 @@ A module for doing heap stuff.
 class heap:
     def __init__(self):
         self.x = []
+        self.indices = {}
+        self.values = {}
 
     # return the index of the left child of the n'th element
     def left(self, n):
@@ -19,6 +21,13 @@ class heap:
     def heapsize(self):
         return len(self.x) - 1
 
+    def setIndices(self):
+        for v in range(0, len(self.x)):
+            self.indices[self.x[v]] = v
+
+    def setValues(self):
+        for v in self.x:
+            self.values[v]
 
     # Compare element at index n with its children
     # Swap, if necessary, with smallest, and iterate
@@ -58,7 +67,7 @@ class heap:
         self.reheapDown(value)
 
     def decreaseKeyQ(name, newValue):
-        
+
     def deleteMinQ():
 
 
