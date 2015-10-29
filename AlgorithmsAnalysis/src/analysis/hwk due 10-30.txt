@@ -1,0 +1,17 @@
+1. Heap-based priority queue.
+Add the following functions to our heap (see Code from Class to the left) so that it can act as a priority queue. See Figure 4.16 in the text for a decent hint about how to do this. Note that the h^(-1) inverse function they talk about there is what we handled with a Python dictionary.
+insertQ(name, value)
+decreaseKeyQ(name, newValue)
+deleteMinQ()
+
+To submit your solution, please add your functions to the heap class in the code supplied, and then submit to the eCollege Dropbox a single file with your additions to the heap class. 
+
+Please answer the rest of the questions in your notebook.
+
+2. Heap running times.
+Suppose that a heap is full for k levels, so that it has n = 2^(k+1) - 1 nodes. 
+a) What is the sum of the distances from each node to the bottom of the tree? Show your derivation. For k = 2, this number is 4.
+b) What is the sum of the distances from each node to the top of the tree? Show your derivation. For k = 2, this number is 10.
+
+3. From the Book:
+Please do problems 4.6 and 4.8
