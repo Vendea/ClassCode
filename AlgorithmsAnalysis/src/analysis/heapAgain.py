@@ -59,6 +59,9 @@ class heap:
         self.x.append(value)
         self.names[name] = value
         self.heapsort()
+
+    def decreaseKeyQ(self, name, newValue):
+        self.names[name]
  
 # When you 'run' this module, the code below will
 # automatically run, saving the keystrokes to build
