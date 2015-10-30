@@ -61,7 +61,7 @@ class heap:
         self.x.append(value)
         self.names[name] = value
         if value not in self.indices:
-            self.indices[value] = self.heapsize()-1
+            self.indices[value] = self.heapsize()
         self.heapsort()
 
     def decreaseKeyQ(self, name, newValue):
@@ -80,7 +80,7 @@ class heap:
             return None
         self.heapsort()
         rval = self.x[1]
-        newtemproot = self.x[self.heapsize()-1]
+        newtemproot = self.x[self.heapsize()]
         self.x[1] = newtemproot
         self.indices[newtemproot] = 1
         for k in self.names:
@@ -95,5 +95,5 @@ class heap:
 # automatically run, saving the keystrokes to build
 # the heap and construct the array.
 h = heap()
-h.x = [None, 6, 9, 2, 3, 7, 4, 5, 8, 1]
-h.heapsort()
+#h.x = [None, 6, 9, 2, 3, 7, 4, 5, 8, 1]
+#h.heapsort()
