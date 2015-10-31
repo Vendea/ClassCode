@@ -1,8 +1,6 @@
 """
 A module for doing heap stuff.
-"""
-from math import ceil
- 
+""" 
 class heap:
     def __init__(self):
         self.x = [None]
