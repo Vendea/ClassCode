@@ -202,7 +202,7 @@ def connectedComponentsDFS(g):
     rv.append(InnerRv)
     #print InnerRv
     if len(unvisited) > 0:
-        print "UV ",unvisited
+        #print "UV",unvisited
         rv.append(connectedComponentsDFS(unvisited)[0])
 
     return rv # two components, both empty. 
