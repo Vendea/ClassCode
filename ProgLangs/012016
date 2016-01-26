@@ -24,5 +24,6 @@
 
 (define (repl)
   (begin
+    (print (eval (read)))
     (display "\n> ")
     (repl)))
