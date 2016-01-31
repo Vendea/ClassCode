@@ -1,0 +1,43 @@
+#lang racket
+(define GE empty)
+
+(define (eval pt)
+  (cond
+    [(number? pt) pt]
+    [(symbol=? (first pt) '+) (+ (eval (second pt) env) (eval(third pt)))]
+    [(symbol=? (first pt) '*) (* (eval (second pt) env) (eval(third pt)))]
+    [(symbol=? (first pt) '-) (- (eval (second pt) env) (eval(third pt)))]
+    [(symbol=? (first pt) '/) (/ (eval (second pt) env) (eval(third pt)))]
+    [(symbol=? (first pt) '%) (modulo (eval (second pt)) (eval(third pt)))]
+    [(symbol=? (first pt) '=) (= (eval (second pt) env) (eval(third pt)))]
+    [(symbol=? (first pt) 'concat) (string-append (eval (second pt)) (eval(third pt)))]
+    [(symbol=? (first pt) 'or) (or (eval (second pt)) (eval(third pt)))]
+    [(symbol=? (first pt) 'define) (set! GE (cons (list (second pt) (eval (third pt))) GE))]
+    [(symbol=? (first pt) 'if (if (eval (second pt) env) (eval (third pt env) (eval (fourth pt) env))))
+    [(symbol=? (first pt) 'lambda) pt]
+    [else (local ((define my-fun (symbol-lookup (first pt) env))
+                 (LE) (add-all-env (second my-fun) (rest pt) GE)))
+          (eval (third my-fun) LE) ; The function body
+          )
+        ]
+    ))
+
+(define (add-all-env los lov env)
+  (cond
+    [(empty? los) env]
+    [else (cons (cons (list (first los) (eval (first lov)))) (add-all-env (rest los) (rest lov) env))]
+    ))
+
+(define (symbol-lookup s)
+  (local ((define (s-l env)
+            (cond
+              [(empty? GE) (error "not a symbol" s)]
+              [(symbol=? (first (first env)) s) (second (first env))]
+              [else (s-l (rest env))])))
+    (s-l GE)))
+
+(define (repl)
+  (begin
+    (print (eval (read)))
+    (display "\n> ")
+    (repl)))
