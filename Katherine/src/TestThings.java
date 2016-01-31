@@ -2,12 +2,19 @@
 public class TestThings {
 	
 	public static void main(String[] args) {
+		for (int i = 0; i < 20; i++){
+			for (int j = 0; j < 20; j++){
+				for (int k = 0; k < 20; k++){
+					System.out.println(i+""+j+""+k+""+i+""+j+""+(k+1));
+				}
+			}
+		}
 		char[] nums = "0 1 2 3 4".toCharArray();
 		System.out.println(nums);
 		System.out.println(nums[0] == '0');
-		for(int i = 0;2*i < nums.length; i++){
-			System.out.println((int)nums[2*i] - 48);
-		}
+		//for(int i = 0;2*i < nums.length; i++){
+			//System.out.println((int)nums[2*i] - 48);
+		//}
 		System.out.println(gcd(75, 25));
 		System.out.println(5%10);
 		System.out.println(-4);
