@@ -1,0 +1,5 @@
+/bin*
+/.classpath
+/.gitignore
+/.gitignore*
+/bin/geometry3D
