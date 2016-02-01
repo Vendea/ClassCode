@@ -18,8 +18,8 @@ public class Comap {
 	static double HUMTEMP = 37; // deg C
 	static double SPECHEATWAT = 4186000; //Joules per gram deg C times a million for unit conversions
 	static double TNOUGHT = 40;
-	static double cubeSide = 0.00100;
-	static double numCubes = 1000;
+	//static double cubeSide = 0.00100;
+	//static double numCubes = 1000;
 	static double deltaT = .1; // seconds
 	static double width = 0.6; // width of tub also x
 	static double length = 1.5; // length of tub also y
@@ -43,6 +43,8 @@ public class Comap {
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		sc = new Scanner(System.in);
 		//double cS = cubeSide;
+		System.out.println("number of cubes to use");
+		int numCubes = sc.nextInt();
 		double cS = cSide(numCubes);
 		int x = (int) Math.ceil(width/cS);
 		int y = (int) Math.ceil(length/cS);
