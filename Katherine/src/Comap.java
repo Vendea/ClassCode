@@ -8,6 +8,13 @@ import java.util.HashMap;
 import java.util.Scanner;
 
 public class Comap {
+	static double TOKELVIN = 273.15;
+	static double EMISSIVITY = 0.998;
+	static double STEFANC = 5.6703 * Math.pow(10, -8);
+	static double HEATEVAP = 2257000; // J / kg
+	static double COEVAP = 25/3600; //evaporation coefficient kg / m*m*s
+	static double MAXHUMID = .065; //kg / kg 
+	static double HUMIDRATIO = 0.0098; // kg / kg from Mollier diagram
 	static double AVGHEIGHT = 1.65; // meters average human height
 	static double AVGLEG = AVGHEIGHT * 0.75; // meters average leg length 
 	static double AVGTORSO = AVGHEIGHT * 0.25; // meters average torso length
@@ -18,9 +25,6 @@ public class Comap {
 	static double HUMTEMP = 37; // deg C
 	static double SPECHEATWAT = 4186000; //Joules per gram deg C times a million for unit conversions
 	static double TNOUGHT = 40;
-	//static double cubeSide = 0.00100;
-	//static double numCubes = 1000;
-	static double deltaT = .1; // seconds
 	static double width = 0.6; // width of tub also x
 	static double length = 1.5; // length of tub also y
 	static double height = AVGTORSO; // height of tub also z maximum depth of tub, aka height of overflow drain
@@ -38,11 +42,8 @@ public class Comap {
 	static double[][][] temps;
 	static Scanner sc;
 
-	//delta Q = delta k times area (side length squared) times difference in temperature times delta time divided by side length
-
 	public static void main(String[] args) throws FileNotFoundException, IOException {
 		sc = new Scanner(System.in);
-		//double cS = cubeSide;
 		System.out.println("number of cubes to use");
 		int numCubes = sc.nextInt();
 		double cS = cSide(numCubes);
@@ -50,7 +51,6 @@ public class Comap {
 		int y = (int) Math.ceil(length/cS);
 		int z = (int) Math.ceil(height/cS);
 		int leg = (int) Math.ceil(AVGLEG/cS); 
-		//int torso = (int) Math.ceil(AVGTORSO/cS);
 		int w = (int) Math.ceil(HUMWIDTH/cS);
 		int d = (int) Math.ceil(HUMDEPTH/cS);
 		temps = new double[x][y][z];
@@ -104,28 +104,9 @@ public class Comap {
 				}
 			}
 		}
-		//System.out.println(sb);
 		writer.write(sb.toString());
 		System.out.println("csv saved");
 	}
-
-	/***
-	  private static StringBuilder printarr(double[][][] t) {
-	 
-		StringBuilder sb = new StringBuilder();
-		for (int i = 0; i < t.length; i++){
-			sb.append("[");
-			for (int j = 0; j < t[0].length; j++){
-				sb.append("[");
-				for (int k = 0; k < t[0][0].length; k++){
-					sb.append(t[i][j][k] + ",");
-				}
-				sb.append("],");
-			}
-			sb.append("],");
-		}
-		return sb;
-	}*/
 
 	static void resetHuman(double cS){
 		int x = (int) Math.ceil(width/cS);
@@ -150,8 +131,13 @@ public class Comap {
 		}			
 	}
 
-	static void resetInflow(double cS){
-		//all cubes in the inflow area stay water-in-temp
+	static void resetInflow(int x, int y, int z, double cS){
+		int mid = x / 2;
+		int len = y / 4;
+		int hei = z / 2;
+		for(int k = hei; k < z; k++){
+			temps[mid][len][k] = inflowTemp;
+		}
 	}
 
 
@@ -163,8 +149,7 @@ public class Comap {
 		int z = (int) Math.ceil(height/cS);
 		while(ticker < t){
 			if(ticker >= timeAddWater){
-				resetInflow(cS);
-				//input spot for water stream stays at incoming water temp
+				resetInflow(x, y, z, cS);
 			}
 			getInteractions(x, y, z, cS);
 			changeTemps(x, y, z, cS);
@@ -232,7 +217,7 @@ public class Comap {
 					if(k+1 >= z){
 						interactions.put
 						(i+"."+j+"."+k+"."+i+"."+j+"."+(k+1),
-								cubeisTouchingAir(i, j, k+1, cS));
+								cubeisTouchingAir(i, j, k, cS));
 					}else{
 						interactions.put
 						(i+"."+j+"."+k+"."+i+"."+j+"."+(k+1),
@@ -243,12 +228,8 @@ public class Comap {
 		}
 	}
 	static double cubeisTouchingTub(int xi, int yi, int zi, double cS){
-		//double cS = cSide(numCubes);
 		double surfaceArea = cS*cS;
-		//int xi = (int) Math.ceil(x/cS);
-		//int yi = (int) Math.ceil(y/cS);
-		//int zi = (int) Math.ceil(z/cS);
-		deltaT = temps[xi][yi][zi] - ambientTemp;
+		double deltaT = temps[xi][yi][zi] - ambientTemp;
 		if(deltaT < 0.001) return 0;
 		return kTub * surfaceArea * deltaT * timeStep / tubLength;
 	}
@@ -258,19 +239,14 @@ public class Comap {
 	}
 
 	static double cubeisTouchingAir(int x, int y, int z, double cS){
-		return 0;
+		double radiation = 
+				EMISSIVITY * STEFANC * cS*cS *
+				(Math.pow(temps[x][y][z] + TOKELVIN, 4) - Math.pow(ambientTemp, 4));
+		double evaporation = COEVAP * cS * cS * (MAXHUMID - HUMIDRATIO) * timeStep * HEATEVAP;
+		return radiation + evaporation;
 	}
 
 	static double deltaQ(int c1x, int c1y, int c1z, int c2x, int c2y, int c2z, double cS){
-		/*int c1xi = (int) Math.ceil((c1x - cS/2)/cS);
-		int c1yi = (int) Math.ceil((c1y - cS/2)/cS);
-		int c1zi = (int) Math.ceil((c1z - cS/2)/cS);
-		int c2xi = (int) Math.ceil((c2x - cS/2)/cS);
-		int c2yi = (int) Math.ceil((c2y - cS/2)/cS);
-		int c2zi = (int) Math.ceil((c2z - cS/2)/cS);
-		double dist = Math.sqrt((c1x - c2x) * (c1x - c2x) + (c1y - c2y) * (c1y - c2y) + (c1z - c2z) * (c1z - c2z));  
-		double t1 = temps[c1xi][c1yi][c1zi];
-		double t2 = temps[c2xi][c2yi][c2zi];*/
 		double t1 = temps[c1x][c1y][c1z];
 		double t2 = temps[c2x][c2y][c2z];
 
