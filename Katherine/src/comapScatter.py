@@ -10,9 +10,10 @@ Y = []
 Z = []
 temps = []
 
-with open('watersim.csv', 'rb') as csvfile:
+with open('watersim1.csv', 'rb') as csvfile:
     cr = csv.reader(csvfile, delimiter='\t')
     for row in cr:
+        print row
         X.append(row[0])
         Y.append(row[1])
         Z.append(row[2])
