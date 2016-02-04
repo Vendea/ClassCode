@@ -1,0 +1,21 @@
+#lang plai-typed
+
+(define PI : number 3.14)
+
+(define (foo[x : number]) : number
+  (+ x 1))
+
+(test (foo 9) 10)
+(test (foo 11) 10)
+
+(define-type NumOrString
+  [Number (n : number)]
+  [String (s : string)])
+
+(define (bar [x : NumOrString]) : number
+  (type-case NumOrString x
+    [Number (n) (+ n 1)]
+    [String (s) (length (string->list s))]))
+
+(test (bar (Number 5)) 6)
+(test (bar (String "hello")) 5)
