@@ -1,23 +1,56 @@
 #lang plai-typed
 
-(define-type ArithC
+(define-type ExprC
   [numC (n : number)]
-  [plusC (l : ArithC) (r : ArithC)]
-  [multC (l : ArithC) (r : ArithC)])
+  [idC (s : symbol)]
+  [appC (fun : symbol) (arg : ExprC)]
+  [plusC (l : ExprC) (r : ExprC)]
+  [multC (l : ExprC) (r : ExprC)]
+  )
 
-(define (interp [ a : ArithC ]) : number
-  (type-case a
+(define-type FunDefC
+  [fdC (name : symbol) (arg : symbol) (body : ExprC)])
+
+(define (interp [ a : ExprC ] [ fdefs : (listof fdC) ] ) : number
+  (type-case ExprC a
     [numC (n) n]
-    [plusC (l r) (+ (interp l) (interp r))]
-    [multC (l r) (* (interp l) (interp r))]))
+    [idC (s) (error "unbound identifier:" (symbol->string s))]
+    [appC (f a) (local ((define thisFun (lookup f fdefs)))
+                  (interp (subz a (fdC-arg thisFun) (fdC-body thisFun)) fdefs))]
+    [plusC (l r) (+ (interp l fdefs) (interp r fdefs))]
+    [multC (l r) (* (interp l fdefs) (interp r fdefs))]))
+
+(define (lookup [ fn : symbol ] [ lof : (listof fdC) ]) : fdC
+  (cond
+    [(empty? lof) (error "Unkown function:" (symbol->string fn))]
+    [(symbol=? fn (fdC-name (first lof))) (first lof)]
+    [else (lookup fn (rest lof))]))
+
+(define (subz [ what : ExprC ] [ arg : symbol ] [ in : ExprC]) : ExprC
+  (type-case ExprC in
+    [numC (n) ...]
+    [idC (s) ...]
+    [appC (f a) ...]
+    [plusC (l r) ...]
+    [multC (l r) ...]))
 
 ; Surface language
 (define-type ArithS
   [numS (n : number)]
   [plusS (l : ArithS) (r : ArithS)]
-  [multS (l : ArithS) (
+  [multS (l : ArithS) (r : ArithS)]
+  [bminusS (l : ArithS) (r : ArithS)]
+  [uminusS (e : ArithS)])
 
-(define (parse [ s : s-expression ]) : ArithC
+(define (desugar [ as : ArithS ]) : ExprC
+  (type-case ArithS as
+    [numS (n) (numC n)]
+    [plusS (l r) (plusC (desugar l) (desugar r))]
+    [multS (l r) (multC (desugar l) (desugar r))]
+    [bminusS (l r) (plusC (desugar l) (multC (numC -1) (desugar r)))]
+    [uminusS (e) (multC (numC -1) (desugar e))]))
+    
+(define (parse [ s : s-expression ]) : ExprC
   (cond
     [(s-exp-number? s) (numC (s-exp->number s))]
     [(s-exp-list? s)
