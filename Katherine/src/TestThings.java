@@ -9,6 +9,7 @@ public class TestThings {
 				}
 			}
 		}
+		System.out.println(Math.cos(2.0));
 		char[] nums = "0 1 2 3 4".toCharArray();
 		System.out.println(nums);
 		System.out.println(nums[0] == '0');
