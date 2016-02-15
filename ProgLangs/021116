@@ -11,7 +11,6 @@
 (define-type ExprC
   [numC (n : number)]
   [idC (s : symbol)]
-  [boolC (b : number)]
   [appC (fun : symbol) (arg : ExprC)]
   [plusC (l : ExprC) (r : ExprC)]
   [multC (l : ExprC) (r : ExprC)]
@@ -33,7 +32,6 @@
   (type-case ExprC a
     [numC (n) n]
     [idC (s) (lookup s e)]
-    [boolC (b) b]
     [appC (f a) (local ((define thisFun (lookup-fd f fdefs)))
                   (interp (fdC-body thisFun)
                           (extend-env (bind (fdC-arg thisFun) (interp a e fdefs)) e)
@@ -57,7 +55,6 @@
   (type-case ExprC in
     [numC (n) in]
     [idC (s) (if (symbol=? s arg) what in)]
-    [boolC (b) in]
     [appC (f a) (appC f (subz what arg a))]
     [plusC (l r) (plusC (subz what arg l) (subz what arg r))]
     [multC (l r) (multC (subz what arg l) (subz what arg r))]))
@@ -65,7 +62,7 @@
 ; Surface language
 (define-type ArithS
   [numS (n : number)]
-  [boolS (b : number)]
+  [boolS (b : symbol)]
   [plusS (l : ArithS) (r : ArithS)]
   [multS (l : ArithS) (r : ArithS)]
   [bminusS (l : ArithS) (r : ArithS)]
@@ -75,7 +72,7 @@
 (define (desugar [ as : ArithS ]) : ExprC
   (type-case ArithS as
     [numS (n) (numC n)]
-    [boolS (b) (boolC b)]
+    [boolS (b) (if (symbol=? 'false b) (numC 0) (numC 99)) ]
     [plusS (l r) (plusC (desugar l) (desugar r))]
     [multS (l r) (multC (desugar l) (desugar r))]
     [bminusS (l r) (plusC (desugar l) (multC (numC -1) (desugar r)))]
