@@ -13,7 +13,12 @@
   [idC (s : symbol)]
   [appC (fun : symbol) (arg : ExprC)]
   [plusC (l : ExprC) (r : ExprC)]
+  [bminusC (l : ExprC) (r : ExprC)]
+  [uminusC (r : ExprC)]
   [multC (l : ExprC) (r : ExprC)]
+  [andC (l : ExprC) (r : ExprC)]
+  [orC (l : ExprC) (r : ExprC)]
+  [notC (r : ExprC)]
   )
 
 (define-type FunDefC
@@ -37,6 +42,8 @@
                           (extend-env (bind (fdC-arg thisFun) (interp a e fdefs)) e)
                           fdefs))]
     [plusC (l r) (+ (interp l e fdefs) (interp r e fdefs))]
+    [bminusC (l r) (- (interp l e fdefs) (interp r e fdefs))]
+    [uminusC (r) (* -1 (interp r e fdefs))]
     [multC (l r) (* (interp l e fdefs) (interp r e fdefs))]))
 
 (define (lookup-fd [ fn : symbol ] [ lof : (listof FunDefC) ]) : FunDefC
@@ -57,12 +64,17 @@
     [idC (s) (if (symbol=? s arg) what in)]
     [appC (f a) (appC f (subz what arg a))]
     [plusC (l r) (plusC (subz what arg l) (subz what arg r))]
+    [bminusC (l r) (bminusC (subz what arg l) (subz what arg r))]
+    [uminusC (r) (uminusC in)]
     [multC (l r) (multC (subz what arg l) (subz what arg r))]))
 
 ; Surface language
 (define-type ArithS
   [numS (n : number)]
   [boolS (b : symbol)]
+  [andS (l : boolS) (r : boolS)]
+  [orS (l : boolS) (r : boolS)]
+  [notS (r : boolS)]
   [plusS (l : ArithS) (r : ArithS)]
   [multS (l : ArithS) (r : ArithS)]
   [bminusS (l : ArithS) (r : ArithS)]
@@ -72,11 +84,14 @@
 (define (desugar [ as : ArithS ]) : ExprC
   (type-case ArithS as
     [numS (n) (numC n)]
-    [boolS (b) (if (symbol=? 'false b) (numC 0) (numC 99)) ]
+    [boolS (b) (if (symbol=? 'false b) (numC 0) (numC 1)) ]
+    [andS (l r) (andC (desugar l) (desugar r))]
+    [orS (l r) (orC (desugar l) (desugar r))]
+    [notS (r) (notC (desugar r))]
     [plusS (l r) (plusC (desugar l) (desugar r))]
     [multS (l r) (multC (desugar l) (desugar r))]
-    [bminusS (l r) (plusC (desugar l) (multC (numC -1) (desugar r)))]
-    [uminusS (e) (multC (numC -1) (desugar e))]
+    [bminusS (l r) (bminusC (desugar l) (desugar r))]
+    [uminusS (e) (uminusC (desugar e))]
     ))
 
 (define (parse [ s : s-expression ]) : ArithS
