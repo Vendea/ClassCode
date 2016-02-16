@@ -41,6 +41,9 @@
                   (interp (fdC-body thisFun)
                           (extend-env (bind (fdC-arg thisFun) (interp a e fdefs)) e)
                           fdefs))]
+    [orC (l r) (if (= (+ (interp l e fdefs) (interp r e fdefs)) 0) 0 1)]
+    [andC (l r) (if (= (* (interp l e fdefs) (interp r e fdefs)) 0) 0 1)]
+    [notC (r) (if (= 0 (interp r e fdefs)) 1 0)]
     [plusC (l r) (+ (interp l e fdefs) (interp r e fdefs))]
     [bminusC (l r) (- (interp l e fdefs) (interp r e fdefs))]
     [uminusC (r) (* -1 (interp r e fdefs))]
@@ -64,6 +67,9 @@
     [idC (s) (if (symbol=? s arg) what in)]
     [appC (f a) (appC f (subz what arg a))]
     [plusC (l r) (plusC (subz what arg l) (subz what arg r))]
+    [andC (l r) (andC (subz what arg l) (subz what arg r))]
+    [orC (l r) (orC (subz what arg l) (subz what arg r))]
+    [notC (r) (notC (subz what arg r))]
     [bminusC (l r) (bminusC (subz what arg l) (subz what arg r))]
     [uminusC (r) (uminusC in)]
     [multC (l r) (multC (subz what arg l) (subz what arg r))]))
@@ -72,9 +78,9 @@
 (define-type ArithS
   [numS (n : number)]
   [boolS (b : symbol)]
-  [andS (l : boolS) (r : boolS)]
-  [orS (l : boolS) (r : boolS)]
-  [notS (r : boolS)]
+  [andS (l : ArithS) (r : ArithS)]
+  [orS (l : ArithS) (r : ArithS)]
+  [notS (r : ArithS)]
   [plusS (l : ArithS) (r : ArithS)]
   [multS (l : ArithS) (r : ArithS)]
   [bminusS (l : ArithS) (r : ArithS)]
@@ -84,7 +90,10 @@
 (define (desugar [ as : ArithS ]) : ExprC
   (type-case ArithS as
     [numS (n) (numC n)]
-    [boolS (b) (if (symbol=? 'false b) (numC 0) (numC 1)) ]
+    [boolS (b) 
+           (cond
+             [(symbol=? 'false b) (numC 0)]
+             [(symbol=? 'true b) (numC 1)])]
     [andS (l r) (andC (desugar l) (desugar r))]
     [orS (l r) (orC (desugar l) (desugar r))]
     [notS (r) (notC (desugar r))]
@@ -105,5 +114,8 @@
          [(-) (if (= (length (rest sl)) 1)
                   (uminusS (parse (second sl)))
                   (bminusS (parse (second sl)) (parse (third sl))))]
+         [(and) (andS (parse (second sl)) (parse (third sl)))]
+         [(or) (orS (parse (second sl)) (parse (third sl)))]
+         [(not) (notS (parse (second sl)))]
          [else (error 'parse "invalid list input")]))]
     [else (error 'parse "invalid input")]))
