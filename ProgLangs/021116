@@ -11,6 +11,7 @@
 (define-type ExprC
   [numC (n : number)]
   [idC (s : symbol)]
+  [boolC (b : boolean)]
   [appC (fun : symbol) (arg : ExprC)]
   [plusC (l : ExprC) (r : ExprC)]
   [bminusC (l : ExprC) (r : ExprC)]
@@ -19,6 +20,7 @@
   [andC (l : ExprC) (r : ExprC)]
   [orC (l : ExprC) (r : ExprC)]
   [notC (r : ExprC)]
+  [ifC (l : ExprC) (r : ExprC) (t : ExprC)]
   )
 
 (define-type FunDefC
@@ -37,13 +39,15 @@
   (type-case ExprC a
     [numC (n) n]
     [idC (s) (lookup s e)]
+    [boolC (b) b]
     [appC (f a) (local ((define thisFun (lookup-fd f fdefs)))
                   (interp (fdC-body thisFun)
                           (extend-env (bind (fdC-arg thisFun) (interp a e fdefs)) e)
                           fdefs))]
-    [orC (l r) (if (= (+ (interp l e fdefs) (interp r e fdefs)) 0) 0 1)]
-    [andC (l r) (if (= (* (interp l e fdefs) (interp r e fdefs)) 0) 0 1)]
-    [notC (r) (if (= 0 (interp r e fdefs)) 1 0)]
+    [orC (l r) (boolC (or (interp l e fdefs) (interp r e fdefs)))]
+    [andC (l r) (boolC (and (interp l e fdefs) (interp r e fdefs)))]
+    [notC (r) (boolC (not (interp r e fdefs)))]
+    [ifC (l r t) (if (interp l e fdefs) (interp r e fdefs) (interp t e fdefs))]
     [plusC (l r) (+ (interp l e fdefs) (interp r e fdefs))]
     [bminusC (l r) (- (interp l e fdefs) (interp r e fdefs))]
     [uminusC (r) (* -1 (interp r e fdefs))]
@@ -65,8 +69,10 @@
   (type-case ExprC in
     [numC (n) in]
     [idC (s) (if (symbol=? s arg) what in)]
+    [boolC (b) in]
     [appC (f a) (appC f (subz what arg a))]
     [plusC (l r) (plusC (subz what arg l) (subz what arg r))]
+    [ifC (l r t) (ifC (subz what arg l) (subz what arg r) (subz what arg t))]
     [andC (l r) (andC (subz what arg l) (subz what arg r))]
     [orC (l r) (orC (subz what arg l) (subz what arg r))]
     [notC (r) (notC (subz what arg r))]
@@ -77,10 +83,11 @@
 ; Surface language
 (define-type ArithS
   [numS (n : number)]
-  [boolS (b : symbol)]
+  [boolS (b : boolean)]
   [andS (l : ArithS) (r : ArithS)]
   [orS (l : ArithS) (r : ArithS)]
   [notS (r : ArithS)]
+  [ifS (l : ArithS) (r : ArithS) (t : ArithS)]
   [plusS (l : ArithS) (r : ArithS)]
   [multS (l : ArithS) (r : ArithS)]
   [bminusS (l : ArithS) (r : ArithS)]
@@ -90,13 +97,11 @@
 (define (desugar [ as : ArithS ]) : ExprC
   (type-case ArithS as
     [numS (n) (numC n)]
-    [boolS (b) 
-           (cond
-             [(symbol=? 'false b) (numC 0)]
-             [(symbol=? 'true b) (numC 1)])]
+    [boolS (b) (boolC b)]
     [andS (l r) (andC (desugar l) (desugar r))]
     [orS (l r) (orC (desugar l) (desugar r))]
     [notS (r) (notC (desugar r))]
+    [ifS (l r t) (ifC (desugar l) (desugar r) (desugar t))]
     [plusS (l r) (plusC (desugar l) (desugar r))]
     [multS (l r) (multC (desugar l) (desugar r))]
     [bminusS (l r) (bminusC (desugar l) (desugar r))]
@@ -106,6 +111,7 @@
 (define (parse [ s : s-expression ]) : ArithS
   (cond
     [(s-exp-number? s) (numS (s-exp->number s))]
+    [(s-exp-boolean? s) (boolS (s-exp->boolean s))]
     [(s-exp-list? s)
      (let ((sl (s-exp->list s)))
        (case (s-exp->symbol (first sl))
@@ -114,8 +120,20 @@
          [(-) (if (= (length (rest sl)) 1)
                   (uminusS (parse (second sl)))
                   (bminusS (parse (second sl)) (parse (third sl))))]
+         [(if) (ifS (parse (second sl)))]
          [(and) (andS (parse (second sl)) (parse (third sl)))]
          [(or) (orS (parse (second sl)) (parse (third sl)))]
          [(not) (notS (parse (second sl)))]
          [else (error 'parse "invalid list input")]))]
     [else (error 'parse "invalid input")]))
+
+(define (repl fds)
+  (local ((define input (read)))
+    (cond
+      [(equal? (first (s-exp->list input)) (symbol->s-exp 'define))
+       (begin (display "\n") (repl (cons
+                                    (fdC
+                                     (s-exp->symbol (first (s-exp->list (second (s-exp->list input)))))
+                                     (s-exp->symbol (second (s-exp->list (second (s-exp->list input)))))
+                                     (ExprC (desugar (parse (third (s-exp->list input)))))) fds)))]
+      [else (begin (display (interp (desugar (parse (input)))  (empty-env) fds) "\n") (repl fds))])))
