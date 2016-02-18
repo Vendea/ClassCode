@@ -1,0 +1,97 @@
+#lang plai-typed
+; turn into eager evaluation instead of lazy
+; complete this with repl function
+;     the list of fdefs stored in this function
+;     use display
+; add if
+; lift the - (both kinds) out of the sugar
+; add booleans: and, or, not
+
+; Core language
+(define-type ExprC
+  [numC (n : number)]
+  [idC (s : symbol)]
+  [boolC (b : number)]
+  [appC (fun : symbol) (arg : ExprC)]
+  [plusC (l : ExprC) (r : ExprC)]
+  [multC (l : ExprC) (r : ExprC)]
+  )
+
+(define-type FunDefC
+  [fdC (name : symbol) (arg  : symbol) (body : ExprC)])
+
+(define-type Binding
+  [bind (name : symbol) (val : number)])
+
+(define-type-alias Env (listof Binding))
+
+(define extend-env cons)
+
+(define empty-env empty)
+
+(define (interp [ a : ExprC ] [ e : Env ] [ fdefs : (listof FunDefC) ] ) : number
+  (type-case ExprC a
+    [numC (n) n]
+    [idC (s) (lookup s e)]
+    [boolC (b) b]
+    [appC (f a) (local ((define thisFun (lookup-fd f fdefs)))
+                  (interp (fdC-body thisFun)
+                          (extend-env (bind (fdC-arg thisFun) (interp a e fdefs)) e)
+                          fdefs))]
+    [plusC (l r) (+ (interp l e fdefs) (interp r e fdefs))]
+    [multC (l r) (* (interp l e fdefs) (interp r e fdefs))]))
+
+(define (lookup-fd [ fn : symbol ] [ lof : (listof FunDefC) ]) : FunDefC
+  (cond
+    [(empty? lof) (error fn "unknown function.")]
+    [(symbol=? fn (fdC-name (first lof))) (first lof)]
+    [else (lookup-fd fn (rest lof))]))
+
+(define (lookup [ s : symbol ] [ e : Env ]) : number
+  (cond
+    [(empty? e) (error s "Symbol not defined")]
+    [(symbol=? s (bind-name (first e))) (bind-val (first e))]
+    [else (lookup s (rest e))]))
+
+(define (subz [ what : ExprC ] [ arg : symbol ] [ in : ExprC ]) : ExprC
+  (type-case ExprC in
+    [numC (n) in]
+    [idC (s) (if (symbol=? s arg) what in)]
+    [boolC (b) in]
+    [appC (f a) (appC f (subz what arg a))]
+    [plusC (l r) (plusC (subz what arg l) (subz what arg r))]
+    [multC (l r) (multC (subz what arg l) (subz what arg r))]))
+
+; Surface language
+(define-type ArithS
+  [numS (n : number)]
+  [boolS (b : number)]
+  [plusS (l : ArithS) (r : ArithS)]
+  [multS (l : ArithS) (r : ArithS)]
+  [bminusS (l : ArithS) (r : ArithS)]
+  [uminusS (e : ArithS)]
+  )
+
+(define (desugar [ as : ArithS ]) : ExprC
+  (type-case ArithS as
+    [numS (n) (numC n)]
+    [boolS (b) (boolC b)]
+    [plusS (l r) (plusC (desugar l) (desugar r))]
+    [multS (l r) (multC (desugar l) (desugar r))]
+    [bminusS (l r) (plusC (desugar l) (multC (numC -1) (desugar r)))]
+    [uminusS (e) (multC (numC -1) (desugar e))]
+    ))
+
+(define (parse [ s : s-expression ]) : ArithS
+  (cond
+    [(s-exp-number? s) (numS (s-exp->number s))]
+    [(s-exp-list? s)
+     (let ((sl (s-exp->list s)))
+       (case (s-exp->symbol (first sl))
+         [(+) (plusS (parse (second sl)) (parse (third sl)))]
+         [(*) (multS (parse (second sl)) (parse (third sl)))]
+         [(-) (if (= (length (rest sl)) 1)
+                  (uminusS (parse (second sl)))
+                  (bminusS (parse (second sl)) (parse (third sl))))]
+         [else (error 'parse "invalid list input")]))]
+    [else (error 'parse "invalid input")]))
