@@ -1,11 +1,4 @@
 #lang plai-typed
-; turn into eager evaluation instead of lazy
-; complete this with repl function
-;     the list of fdefs stored in this function
-;     use display
-; add if
-; lift the - (both kinds) out of the sugar
-; add booleans: and, or, not
 
 ; Core language
 (define-type ExprC
