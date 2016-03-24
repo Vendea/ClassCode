@@ -1,0 +1,7 @@
+q 2:  Could something fail to find a storage spot?
+
+No - anything that our interpreter looks up it has to have obtained from somewhere within our environment or store, meaning that it exists and we know it exists.
+
+q 3:  What changes need to be made to limit storage to only boxes?
+
+Every time something is put in storage, see if it's a box.  If not, wrap it in a box, and then put it in the storage.
