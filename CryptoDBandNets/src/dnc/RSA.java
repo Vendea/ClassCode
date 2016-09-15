@@ -13,12 +13,25 @@ public class RSA {
     	//BigInteger temp = factor2(new BigInteger("6138471350288287595828596354472336799310944949"));
     	//System.out.println(temp);
     	//BigInteger n = new BigInteger("6138471350288287595828596354472336799310944949");
-    	BigInteger p = new BigInteger("61703854346687092814501");//factor2(n);
-    	BigInteger q = new BigInteger("99482786209738044234449");//n.divide(p);
-    	BigInteger phi = p.subtract(BigInteger.ONE).multiply(q.subtract(BigInteger.ONE));
-    	BigInteger e = new BigInteger("3");
+    	BigInteger a = new BigInteger("40406937945684068505688060977089");
+    	BigInteger b = new BigInteger("2506097772344649289");
+    	BigInteger c = new BigInteger("19793");
+    	BigInteger f = new BigInteger("1871");
+    	BigInteger g = new BigInteger("29");
+    	BigInteger h = new BigInteger("5");
+    	BigInteger phi = phi(a, b, c, f, g, h);
+    	System.out.println(phi);
+    	BigInteger e = new BigInteger("5");
     	System.out.println(e.modInverse(phi));
-    	//BigInteger c = e.modInverse(phi);
+    	//BigInteger c = e.modInverse(phi);+
+    }
+    
+    static BigInteger phi(BigInteger ...args){
+    	BigInteger product = BigInteger.ONE;
+    	for(int i = 0; i < args.length; i++){
+    		product = product.multiply(args[i].subtract(BigInteger.ONE));
+    	}
+    	return product;
     }
 
     /**
