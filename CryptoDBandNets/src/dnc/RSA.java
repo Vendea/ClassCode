@@ -13,17 +13,20 @@ public class RSA {
     	//BigInteger temp = factor2(new BigInteger("6138471350288287595828596354472336799310944949"));
     	//System.out.println(temp);
     	//BigInteger n = new BigInteger("6138471350288287595828596354472336799310944949");
-    	BigInteger a = new BigInteger("40406937945684068505688060977089");
-    	BigInteger b = new BigInteger("2506097772344649289");
-    	BigInteger c = new BigInteger("19793");
-    	BigInteger f = new BigInteger("1871");
-    	BigInteger g = new BigInteger("29");
-    	BigInteger h = new BigInteger("5");
-    	BigInteger phi = phi(a, b, c, f, g, h);
+    	BigInteger en1 = new BigInteger("3198146490948181");
+    	BigInteger en2 = new BigInteger("5318431920345616794413444545267");
+    	BigInteger en3 = new BigInteger("6138471350288287595828596354472336799310944949");
+    	BigInteger en4 = new BigInteger("7339520327860714514013398644733827882176683970668868528312313");
+    	BigInteger en5 = new BigInteger("5437601359923935907138990951748213431162192715637897279001353486200853304833");
+    	BigInteger p = new BigInteger("2148485760663500847015661664707");
+    	BigInteger q = new BigInteger("3416136360891731088336715347859");	
+    	BigInteger phi = phi(p,q);
     	System.out.println(phi);
     	BigInteger e = new BigInteger("5");
     	System.out.println(e.modInverse(phi));
-    	//BigInteger c = e.modInverse(phi);+
+    	//for this number 3367524723136520599574313651967471262880889111291270088046119
+    	// factor a 1307632717511110048622297958011
+    	// factor b 2575283317739339966230262805829
     }
     
     static BigInteger phi(BigInteger ...args){
@@ -56,6 +59,7 @@ public class RSA {
     
     /**
      * factors a large pseudo-prime
+     * finds the sqrt and then searches all odd numbers > sqrt(n)
      * @param n the pseudo-prime to factor
      * @return one of the factors of n
      */
@@ -70,10 +74,33 @@ public class RSA {
     	return sqrt;    	
     }
     
+    /**
+     * factors a large pseudo-prime
+     * using the expression of n as difference of two squares
+     * @param n the pseudo-prime to factor
+     * @return one of the factors of n
+     */
     static BigInteger factor2(BigInteger n){
     	BigInteger sqrt = BIsqrt(n);
     	while(!isBISquare(sqrt.multiply(sqrt).subtract(n))){
     		sqrt = sqrt.add(BigInteger.ONE);
+    	}
+    	BigInteger r = BIsqrt(sqrt.multiply(sqrt).subtract(n));
+    	return sqrt.subtract(r);
+    }
+    
+    /**
+     * factors a large pseudo-prime
+     * using the expression of n as difference of two squares
+     * @param n the pseudo-prime to factor
+     * @return one of the factors of n
+     */
+    static BigInteger factor2_test(BigInteger n){
+    	BigInteger sqrt = BIsqrt(n);
+    	if(sqrt.mod(TWO).compareTo(BigInteger.ONE) == 0)
+    		sqrt = sqrt.add(BigInteger.ONE);
+    	while(!isBISquare(sqrt.multiply(sqrt).subtract(n))){
+    		sqrt = sqrt.add(TWO);
     	}
     	BigInteger r = BIsqrt(sqrt.multiply(sqrt).subtract(n));
     	return sqrt.subtract(r);
