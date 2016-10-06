@@ -1,0 +1,19 @@
+Question 1: (x^10 + x^8 + x^7 + x^4 + x^2 + x + 1)
+
+Question 2: N = 1023 = 2^10 -1 because the irreducible polynomial being treated as zero is degree ten, so each coefficient up to x^9 can be either zero or one
+
+Question 3: x generates my ring.  
+
+Question 4: Minimum polynomials are 
+[x + 1,
+ x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
+ x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
+ x^10 + x^9 + x^8 + x^5 + x^4 + x^2 + 1,
+ x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
+ x^10 + x^9 + x^8 + x^4 + x^3 + x^2 + 1,
+ x^10 + x^9 + x^8 + x^5 + x^4 + x^2 + 1]
+
+lcm is (x^31 + x^30 + x^28 + x^27 + x^25 + x^24 + x^23 + x^21 + x^20 + x^19 + x^18 + x^14 + x^13 + x^12 + x^11 + x^9 + x^7 + x^6 + x^5 + 1)
+degree of L(x) is 31
+
+Question 5: t is all 1's.  r(x) = x^30 + x^29 + x^25 + x^18 + x^15 + x^14 + x^5 + x^4 + x^3 + x^2
