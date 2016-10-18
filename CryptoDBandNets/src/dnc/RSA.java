@@ -18,8 +18,8 @@ public class RSA {
     	BigInteger en3 = new BigInteger("6138471350288287595828596354472336799310944949");
     	BigInteger en4 = new BigInteger("7339520327860714514013398644733827882176683970668868528312313");
     	BigInteger en5 = new BigInteger("5437601359923935907138990951748213431162192715637897279001353486200853304833");
-    	BigInteger p = new BigInteger("2148485760663500847015661664707");
-    	BigInteger q = new BigInteger("3416136360891731088336715347859");	
+    	BigInteger p = new BigInteger("72394363439549511942019");
+    	BigInteger q = new BigInteger("110173295302627961758097");	
     	BigInteger phi = phi(p,q);
     	System.out.println(phi);
     	BigInteger e = new BigInteger("5");

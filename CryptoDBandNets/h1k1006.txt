@@ -5,25 +5,20 @@ Question 2: N = 1023 = 2^10 -1 because the irreducible polynomial being treated 
 Question 3: x generates my ring.  
 
 Question 4: Minimum polynomials are 
-[x + 1,
- x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
+[x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
  x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
  x^10 + x^9 + x^8 + x^5 + x^4 + x^2 + 1,
  x^10 + x^8 + x^7 + x^4 + x^2 + x + 1,
  x^10 + x^9 + x^8 + x^4 + x^3 + x^2 + 1,
  x^10 + x^9 + x^8 + x^5 + x^4 + x^2 + 1]
 
-lcm is (x^31 + x^30 + x^28 + x^27 + x^25 + x^24 + x^23 + x^21 + x^20 + x^19 + x^18 + x^14 + x^13 + x^12 + x^11 + x^9 + x^7 + x^6 + x^5 + 1)
-degree of L(x) is 31
+lcm is (x^30 + x^27 + x^24 + x^22 + x^21 + x^19 + x^17 + x^16 + x^15 + x^14 + x^12 + x^10 + x^9 + x^6 + x^4 + x^3 + x^2 + x + 1)
+degree of L(x) is 30
 
-1023-31 = 992
+Question 5: first sourceword:  543 1's followed by 450 0's:  1 ... (540) ... 10 ... (448) ... 0
+r(x) = (x^24 + x^23 + x^21 + x^17 + x^16 + x^15 + x^14 + x^10 + x^9 + x^7 + x^6 + x^5 + x^4)
+first  codeword: 1 ... (541) ... 10 ... (448) ... 0000001101000111100011011110000
 
-Question 5: first sourceword:  542 1's followed by 450 0's:  1 ... (540) ... 10 ... (448) ... 0
-r(x) = (x^25 + x^24 + x^22 + x^18 + x^17 + x^16 + x^15 + x^11 + x^10 + x^8 + x^7
-+ x^6 + x^5 + 1)
-first codeword: 1 ... (540) ... 10 ... (448) ... 00000011010001111000110111100001
-
-second sourceword: 800 1's followed by 132 0's:  1 ... (798) ... 10 ... (130) ... 0
-r(x) = (x^30 + x^29 + x^27 + x^26 + x^25 + x^24 + x^22 + x^21 + x^20 + x^18 +
-x^15 + x^14 + x^12 + x^9 + x^4 + x^3 + x^2 + x)
-second codeword: 1 ... (798) ... 10 ... (130) ... 01101111011101001101001000011110
+second sourceword: 801 1's followed by 132 0's:  1 ... (798) ... 10 ... (130) ... 0
+r(x) = (x^27 + x^25 + x^23 + x^21 + x^20 + x^19 + x^16 + x^15 + x^14 + x^10 + x^8 + x^7 + x^6 + x^5 + x^4 + x^2 + x + 1)
+second codeword: 1 ... (799) ... 10 ... (130) ... 0001010101110011100010111110111
