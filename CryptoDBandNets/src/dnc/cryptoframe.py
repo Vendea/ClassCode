@@ -64,7 +64,12 @@ def findChunksize(n):
     return chunkSize, alSize
 
 
-    
+#expands dict outside of rsa encode
+#n is alSize from findChunkSize
+def expandDict(n):
+    for i in range(27, n+10):
+        edoc[i] = chr(i+70) # start with a, b, c, ...
+        code[edoc[i]] = i
 
 # Encodes a phrase p using RSA with encryption key (n, e)
 def rsaEncode(p, n, e):
@@ -73,9 +78,10 @@ def rsaEncode(p, n, e):
     print chunkSize, alSize
     
     # Add extra symbols to the encoding alphabet, as needed
-    for i in range(27, alSize+10):
+    '''for i in range(27, alSize+10):
         edoc[i] = chr(i+70) # start with a, b, c, ...
-        code[edoc[i]] = i
+        code[edoc[i]] = i'''
+    expandDict(alSize)
     
     deficit = (chunkSize - (len(p) % chunkSize)) % chunkSize
     p = p + " "*deficit
@@ -154,14 +160,54 @@ def createECCtext(M, packetSize, p):
         bitmask >>= blockSize             # move the mast one block to the right
 
     print "E:", bin(eccBitstring)
-
+ 
 # M is the encoded message, packetSize, d is the degree of the lcm polynomial
 def decodeECCtext(M, packetSize, d):
-    M = M[2:]
+    retString = ""
+    M = M[3:]
+    Mp = ""
     while len(M) > 0:
-        Mp = M[0:packetSize]
-        M = [packetSize:]
-        
-        
+        Mp = Mp + M[0:packetSize-d]
+        while len(Mp) > 5:
+            let = Mp[0:6]
+            val = int(let ,2)
+            retString = retString + edoc[val]
+            Mp = Mp[6:]
+        M = M[packetSize:]
+    return retString
+
+def decodeErrsECCtext(M, packetSize, d, l):
+    retString = ""
+    M = M[3:]
+    Mp = ""
+    while len(M) > 0:
+        Mp = Mp + M[0:packetSize-d]
+        Mpi = int(Mp, 2)
+        check = M[packetSize-d:packetSize]
+        if findRemainder(Mpi, int(l, 2)) != check:
+            for i in range(len(Mp)):
+                istr = Mpi ^ (1 << i)
+                print i
+                for j in range(i+1, len(Mp)):
+                    jstr = istr ^ (1 << j)
+                    for k in range(j+1, len(Mp)):
+                        kstr = jstr ^ (1 << k)
+                        TMp = str(bin(kstr))[2:]
+                        if findRemainder(int(TMp, 2), int(l, 2)) == check:
+                            Mp = TMp
+                            break
+                    if findRemainder(int(Mp, 2), int(l, 2)) == check:
+                        break
+                if findRemainder(int(Mp, 2), int(l, 2)) == check:
+                    break
+                        
+        while len(Mp) > 5:
+            let = Mp[0:6]
+            val = int(let, 2)
+            retString = retString + edoc[val]
+            Mp = Mp[6:]
+        M = M[packetSize:]
+    return retString
+
     
     
