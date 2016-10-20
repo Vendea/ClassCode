@@ -183,7 +183,7 @@ def decodeErrsECCtext(M, packetSize, d, l):
     while len(M) > 0:
         Mp = Mp + M[0:packetSize-d]
         Mpi = int(Mp, 2)
-        check = M[packetSize-d:packetSize]
+        check = int(M[packetSize-d:packetSize], 2)
         if findRemainder(Mpi, int(l, 2)) != check:
             for i in range(len(Mp)):
                 istr = Mpi ^ (1 << i)
@@ -193,7 +193,10 @@ def decodeErrsECCtext(M, packetSize, d, l):
                     for k in range(j+1, len(Mp)):
                         kstr = jstr ^ (1 << k)
                         TMp = str(bin(kstr))[2:]
-                        if findRemainder(int(TMp, 2), int(l, 2)) == check:
+                        rem = findRemainder(int(TMp, 2), int(l, 2))
+                        if rem == check:
+                            print rem
+                            print check
                             Mp = TMp
                             break
                     if findRemainder(int(Mp, 2), int(l, 2)) == check:
