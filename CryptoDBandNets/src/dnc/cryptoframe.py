@@ -160,35 +160,60 @@ def createECCtext(M, packetSize, p):
         bitmask >>= blockSize             # move the mast one block to the right
 
     print "E:", bin(eccBitstring)
- 
-# M is the encoded message, packetSize, d is the degree of the lcm polynomial
-def decodeECCtext(M, packetSize, d):
+
+def ECCtexttoletters(corrected):
     retString = ""
-    M = M[3:]
-    Mp = ""
-    while len(M) > 0:
-        Mp = Mp + M[0:packetSize-d]
-        while len(Mp) > 5:
-            let = Mp[0:6]
-            val = int(let ,2)
-            retString = retString + edoc[val]
-            Mp = Mp[6:]
-        M = M[packetSize:]
+    while len(corrected) > 5:
+        let = corrected[0:6]
+        val = int(let ,2)
+        retString = retString + edoc[val]
+        corrected = corrected[6:]
     return retString
 
-def decodeErrsECCtext(M, packetSize, d, l):
-    babyMp = ""
+# M is the encoded message, packetSize, d is the degree of the lcm polynomial
+def compressECCtext(M, packetSize, d):
     retString = ""
     M = M[3:]
     Mp = ""
+    corrected = ""
     while len(M) > 0:
         Mp = M[0:packetSize-d]
+        corrected += Mp
+        M = M[packetSize:]
+    return corrected
+
+def removeErrs(M, packetSize, d, l):
+    
+
+
+
+    
+    #corrected packets need to be of length packetSize-d
+    corr = bin(result)[2:]
+    if len(corr) < packetSize-d:
+        corr = ("0" * (packetSize-d - len(corr))) + corr
+    
+
+
+
+def compressErrsECCtext(M, packetSize, d, l):
+    retString = ""
+    M = M[3:]
+    Mp = ""
+    if len(M) == 0:
+        return ""        
+    else:
+        #Mp = M[0:packetSize-d]
+        Mp = M[0:packetSize]
         Mpi = int(Mp, 2)
-        check = int(M[packetSize-d:packetSize], 2)
+        #check = int(M[packetSize-d:packetSize], 2)
         print Mpi
-        print check
+        #print check
         print findRemainder(Mpi << d, int(l, 2))
-        if findRemainder(Mpi << d, int(l, 2)) != check:
+        #if findRemainder(Mpi << d, int(l, 2)) != check:
+        if findRemainder(Mpi, int(l, 2)) != 0:
+            leading = (1 << len(Mp)) - 1
+            #return tryone(Mp, check, l, d)
             for i in range(len(Mp)):
                 istr = Mpi ^ (1 << i)
                 print "on i", i
@@ -197,31 +222,20 @@ def decodeErrsECCtext(M, packetSize, d, l):
                     for k in range(j, len(Mp)):
                         kstr = jstr ^ (1 << k)
                         rem = findRemainder(kstr << d, int(l, 2))
-                        if rem == check:
-                            print rem
-                            print check
-                            Mpi = kstr
-                            Mp = bin(Mpi)[2:]
-                            break
-                    if findRemainder(Mpi << d, int(l, 2)) == check:
-                        break
-                if findRemainder(Mpi << d, int(l, 2)) == check:
-                    break
+                        if rem == 0:    #check
+                            kstr = leading + kstr
+                            Mp = bin(kstr)[3:]
+                            print "corrected string is:", Mp
+                            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
+                            #the 0b1 is so I can strip off the 3 leading bits every time
+                        
+        else:
+            print "corrected string is:", Mp
+            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
 
-        print "getting here"
-        Mp = babyMp + Mp
-        print Mp
-        while len(Mp) > 5:
-            let = Mp[0:6]
-            val = int(let, 2)
-            retString = retString + edoc[val]
-            Mp = Mp[6:]
-
-        babyMp = Mp
-        print babyMp
-        print retString
-        M = M[packetSize:]
-    return retString
+def ECCcorrect(M, packetSize, d, l):
+    return ECCtexttoletters(compressErrsECCtext(M, packetSize, d, l))
+    
 
 expandDict(60)    
     
