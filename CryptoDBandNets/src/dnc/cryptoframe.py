@@ -184,33 +184,38 @@ def decodeErrsECCtext(M, packetSize, d, l):
         Mp = Mp + M[0:packetSize-d]
         Mpi = int(Mp, 2)
         check = int(M[packetSize-d:packetSize], 2)
-        if findRemainder(Mpi, int(l, 2)) != check:
+        print Mpi
+        print check
+        print findRemainder(Mpi << d, int(l, 2))
+        if findRemainder(Mpi << d, int(l, 2)) != check:
             for i in range(len(Mp)):
                 istr = Mpi ^ (1 << i)
-                print i
-                for j in range(i+1, len(Mp)):
+                print "on i", i
+                for j in range(i, len(Mp)):
                     jstr = istr ^ (1 << j)
-                    for k in range(j+1, len(Mp)):
+                    for k in range(j, len(Mp)):
                         kstr = jstr ^ (1 << k)
-                        TMp = str(bin(kstr))[2:]
-                        rem = findRemainder(int(TMp, 2), int(l, 2))
+                        #TMp = bin(kstr)[2:]
+                        rem = findRemainder(kstr << d, int(l, 2))
                         if rem == check:
                             print rem
                             print check
-                            Mp = TMp
+                            Mpi = kstr
+                            Mp = bin(Mpi)[2:]
                             break
-                    if findRemainder(int(Mp, 2), int(l, 2)) == check:
+                    if findRemainder(Mpi << d, int(l, 2)) == check:
                         break
-                if findRemainder(int(Mp, 2), int(l, 2)) == check:
+                if findRemainder(Mpi << d, int(l, 2)) == check:
                     break
-                        
+        print "getting here"                
         while len(Mp) > 5:
             let = Mp[0:6]
             val = int(let, 2)
             retString = retString + edoc[val]
             Mp = Mp[6:]
+        print retString
         M = M[packetSize:]
     return retString
 
-    
+expandDict(60)    
     
