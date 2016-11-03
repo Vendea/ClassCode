@@ -1,0 +1,40 @@
+def compressErrsECCtext(M, packetSize, d, l):
+    retString = ""
+    M = M[3:]
+    Mp = ""
+    if len(M) == 0:
+        return ""        
+    else:
+        #Mp = M[0:packetSize-d]
+        Mp = M[0:packetSize]
+        Mpi = int(Mp, 2)
+        #check = int(M[packetSize-d:packetSize], 2)
+        print Mpi
+        #print check
+        print findRemainder(Mpi << d, int(l, 2))
+        #if findRemainder(Mpi << d, int(l, 2)) != check:
+        if findRemainder(Mpi, int(l, 2)) != 0:
+            leading = (1 << len(Mp)) - 1
+            #return tryone(Mp, check, l, d)
+            for i in range(len(Mp)):
+                istr = Mpi ^ (1 << i)
+                print "on i", i
+                for j in range(i, len(Mp)):
+                    jstr = istr ^ (1 << j)
+                    for k in range(j, len(Mp)):
+                        kstr = jstr ^ (1 << k)
+                        rem = findRemainder(kstr << d, int(l, 2))
+                        if rem == 0:    #check
+                            kstr = leading + kstr
+                            Mp = bin(kstr)[3:]
+                            print "corrected string is:", Mp
+                            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
+                            #the 0b1 is so I can strip off the 3 leading bits every time
+                        
+        else:
+            print "corrected string is:", Mp
+            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
+
+AMAZING GRACE HOW SWEET THE SOUND THAT SAVED A WRETCH LIKE ME I ONCEaWAS LOST BUT NOW AM FOUND WAS BLIND BUT NOW I SEE TWAS GRACE THAT TAUGHT MY HEART TO FEAR AND GRACE MY FEARS RELIEVED HOW PRECIOWS DID THAT GRACE APPEAR THEdHOUR I FIRST BELIEVED THROUGH MANY DANGERS TOILS AND SNARES I HAVE ALREADY COME TIS CRACE THAT BROUGHT ME SAFE THUS FDR AND GRACE WILL LEAD ME HOME THE LORD HAS PROMISED GOOD TO ME HIS WORD MY HOPE SECURES HE WILL MY SHIELD AND PORTION BE AS LONG AS LIFE ENDURES YEA WHEN THIS FLESH AND HEART SHALL FAIL AND MORTAL LIFE SHALL CEASE I SHALL POSSESS WITHIN THE VEIL A LIFE OF JOY AND PEACE WHEN WEVE BjEN THERE iEN TFOUSAcD YEARS BRIGHT SHINING AS THE SUN WEVE NO LESS DAYS TO SING GODS PRAISE THAN WHEN WEVE FIRST BEGUNAAAAAAAAAAAAAAAAAAAAAAAAAA
+
+AMAZING GRACE HOW SWEET THE SOUND THAT SAVED A WRETCH LIKE ME I ONCEaWAS LOST BUT NOW AM FOUND WAS BLIND BUT NOW I SEE TWAS GRACE THAT TAUGHT MY HEART TO FEAR AND GRACE MY FEARS RELIEVED HOW PRECIOUS DID THAT GRACE APPEAR THEdHOUR I FIRST BELIEVED THROUGH MANY DANGERS TOILS AND SNARES I HAVE ALREADY COME TIS GRACE THAT BROUGHT ME SAFE THUS FDR AND GRACE WILL LEAD ME HOME THE LORD HAS PROMISED GOOD TO ME HIS WORD MY HOPE SECURES HE WILL MY SHIELD AND PORTION BE AS LONG AS LIFE ENDURES YEA WHEN THIS FLESH AND HEART SHALL FAIL AND MORTAL LIFE SHALL CEASE I SHALL POSSESS WITHIN THE VEIL A LIFE OF JOY AND PEACE WHEN WEVE BEEN THERE DEN TFOUSAcD YEARS BRIGHT SHINING AS THE SUN WEVE NO LESS DAYS TO SING GODS PRAISE THAN WHEN WEVE FIRST BEGUNAAAAAAAAAAAAAAAAAAAAAAAAAA

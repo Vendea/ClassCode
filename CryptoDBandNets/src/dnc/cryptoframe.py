@@ -163,11 +163,13 @@ def createECCtext(M, packetSize, p):
 
 def ECCtexttoletters(corrected):
     retString = ""
-    while len(corrected) > 5:
+    while len(corrected) > 0: # watch this break
         let = corrected[0:6]
         val = int(let ,2)
         retString = retString + edoc[val]
         corrected = corrected[6:]
+    for i in range(0, len(retString), (255-24)/6):
+        print retString[i:i+(255-24)/6], "******************************************"
     return retString
 
 # M is the encoded message, packetSize, d is the degree of the lcm polynomial
@@ -183,58 +185,81 @@ def compressECCtext(M, packetSize, d):
     return corrected
 
 def removeErrs(M, packetSize, d, l):
-    
-
-
-
-    
-    #corrected packets need to be of length packetSize-d
-    corr = bin(result)[2:]
-    if len(corr) < packetSize-d:
-        corr = ("0" * (packetSize-d - len(corr))) + corr
-    
-
-
-
-def compressErrsECCtext(M, packetSize, d, l):
-    retString = ""
     M = M[3:]
-    Mp = ""
-    if len(M) == 0:
-        return ""        
-    else:
-        #Mp = M[0:packetSize-d]
-        Mp = M[0:packetSize]
-        Mpi = int(Mp, 2)
-        #check = int(M[packetSize-d:packetSize], 2)
-        print Mpi
-        #print check
-        print findRemainder(Mpi << d, int(l, 2))
-        #if findRemainder(Mpi << d, int(l, 2)) != check:
-        if findRemainder(Mpi, int(l, 2)) != 0:
-            leading = (1 << len(Mp)) - 1
-            #return tryone(Mp, check, l, d)
-            for i in range(len(Mp)):
-                istr = Mpi ^ (1 << i)
-                print "on i", i
-                for j in range(i, len(Mp)):
-                    jstr = istr ^ (1 << j)
-                    for k in range(j, len(Mp)):
-                        kstr = jstr ^ (1 << k)
-                        rem = findRemainder(kstr << d, int(l, 2))
-                        if rem == 0:    #check
-                            kstr = leading + kstr
-                            Mp = bin(kstr)[3:]
-                            print "corrected string is:", Mp
-                            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
-                            #the 0b1 is so I can strip off the 3 leading bits every time
-                        
-        else:
-            print "corrected string is:", Mp
-            return Mp + compressErrsECCtext("0b1" + M[packetSize:], packetSize, d, l)
+    corr = ""
+    while len(M) > 0:
+        Msub = M[0:packetSize-d]
+        checkbits = M[packetSize-d:packetSize]
+        if findRemainder(int(Msub, 2)<<d, int(l, 2)) == int(checkbits, 2):
+            corr += Msub
+            M = M[packetSize:]
+            print Msub, "no errors"
+            continue
+
+        flipone = -99
+        fliptwo = -99
+        flipthree = -99
+        
+        # try one
+        for i in range(len(Msub)):
+            if findRemainder((int(Msub, 2) ^ (1<<i))<<d, int(l, 2)) == int(checkbits, 2):
+                flipone = i
+                break
+            
+        if flipone != -99:
+            replace = "0" if Msub[flipone] == "1" else "1"
+            corr += (Msub[0:flipone] + replace + Msub[flipone:][1:])
+            M = M[packetSize:]
+            print (Msub[0:flipone] + replace + Msub[flipone:][1:]), "one error corrected"
+            continue
+
+        # try two
+        for i in range(len(Msub)):
+            for j in range(i+1, len(Msub)):
+                if findRemainder((int(Msub, 2) ^ ((1<<j)^(1<<i)))<<d, int(l, 2)) == int(checkbits, 2):
+                    flipone = i
+                    fliptwo = j
+                    break
+            if flipone != -99 and fliptwo != -99:
+                break
+
+        if flipone != -99 and fliptwo != -99:
+            replace1 = "0" if Msub[flipone] == "1" else "1"
+            replace2 = "0" if Msub[fliptwo] == "1" else "1"
+            corr += (Msub[0:flipone] + replace1 + Msub[flipone:fliptwo][1:] + replace2 + Msub[fliptwo:][1:])
+            M = M[packetSize:]
+            print (Msub[0:flipone] + replace1 + Msub[flipone:fliptwo][1:] + replace2 + Msub[fliptwo:][1:]), "two errors corrected"
+            continue
+        
+        # try three
+        for i in range(len(Msub)):
+            for j in range(i+1, len(Msub)):
+                for k in range(j+1, len(Msub)):
+                    if findRemainder((int(Msub, 2) ^ ((1<<j)^(1<<i)^(1<<k)))<<d, int(l, 2)) == int(checkbits, 2):
+                        flipone = i
+                        fliptwo = j
+                        flipthree = k
+                        break
+                if flipone != -99 and fliptwo != -99:
+                    break
+            if flipone != -99 and fliptwo != -99 and flipthree != -99:
+                break
+
+        if flipone != -99 and fliptwo != -99 and flipthree != -99:
+            replace1 = "0" if Msub[flipone] == "1" else "1"
+            replace2 = "0" if Msub[fliptwo] == "1" else "1"
+            replace3 = "0" if Msub[flipthree] == "1" else "1"
+            corr += (Msub[0:flipone] + replace1 + Msub[flipone:fliptwo][1:] + replace2 + Msub[fliptwo:flipthree][1:] + replace3 + Msub[flipthree:][1:])
+            M = M[packetSize:]
+            print (Msub[0:flipone] + replace1 + Msub[flipone:fliptwo][1:] + replace2 + Msub[fliptwo:flipthree][1:] + replace3 + Msub[flipthree:][1:]), "three errors corrected"
+            continue
+    return corr
+
+def ECCcorrecterrors(M, packetSize, d, l):
+    return ECCtexttoletters(removeErrs(M, packetSize, d, l))
 
 def ECCcorrect(M, packetSize, d, l):
-    return ECCtexttoletters(compressErrsECCtext(M, packetSize, d, l))
+    return ECCtexttoletters(compressECCtext(M, packetSize, d))
     
 
 expandDict(60)    
