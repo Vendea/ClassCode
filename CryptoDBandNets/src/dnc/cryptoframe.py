@@ -247,6 +247,11 @@ def removeErrs(M, packetSize, d, l):
                     break
             if flipone != -99 and fliptwo != -99 and flipthree != -99:
                 break
+        else:
+            corr += Msub
+            M = M[packetSize:]
+            print "I don't know why this works"
+            continue
 
         if flipone != -99 and fliptwo != -99 and flipthree != -99:
             replace1 = "0" if Msub[flipone] == "1" else "1"
