@@ -203,22 +203,24 @@ def removeErrs(M, packetSize, d, l):
         # try one
         for i in range(len(Msub)):
             if findRemainder((int(Msub, 2) ^ (1<<i))<<d, int(l, 2)) == int(checkbits, 2):
-                flipone = i
+                flipone = len(Msub)-i-1
+                print "1e"
                 break
             
         if flipone != -99:
             replace = "0" if Msub[flipone] == "1" else "1"
             corr += (Msub[0:flipone] + replace + Msub[flipone:][1:])
-            M = M[packetSize:]
             print (Msub[0:flipone] + replace + Msub[flipone:][1:]), "one error corrected"
+            M = M[packetSize:]
             continue
 
         # try two
         for i in range(len(Msub)):
+            print "2e", i
             for j in range(i+1, len(Msub)):
                 if findRemainder((int(Msub, 2) ^ ((1<<j)^(1<<i)))<<d, int(l, 2)) == int(checkbits, 2):
-                    flipone = i
-                    fliptwo = j
+                    fliptwo = len(Msub)-i-1
+                    flipone = len(Msub)-j-1
                     break
             if flipone != -99 and fliptwo != -99:
                 break
@@ -233,12 +235,13 @@ def removeErrs(M, packetSize, d, l):
         
         # try three
         for i in range(len(Msub)):
+            print "3e", i
             for j in range(i+1, len(Msub)):
                 for k in range(j+1, len(Msub)):
                     if findRemainder((int(Msub, 2) ^ ((1<<j)^(1<<i)^(1<<k)))<<d, int(l, 2)) == int(checkbits, 2):
-                        flipone = i
-                        fliptwo = j
-                        flipthree = k
+                        flipthree = len(Msub)-i-1
+                        fliptwo = len(Msub)-j-1
+                        flipone = len(Msub)-k-1
                         break
                 if flipone != -99 and fliptwo != -99:
                     break
