@@ -13,7 +13,7 @@ public class RSA {
     	//BigInteger temp = factor2(new BigInteger("6138471350288287595828596354472336799310944949"));
     	//System.out.println(temp);
     	//BigInteger n = new BigInteger("6138471350288287595828596354472336799310944949");
-    	BigInteger en1 = new BigInteger("3198146490948181");
+    	/**BigInteger en1 = new BigInteger("3198146490948181");
     	BigInteger en2 = new BigInteger("5318431920345616794413444545267");
     	BigInteger en3 = new BigInteger("6138471350288287595828596354472336799310944949");
     	BigInteger en4 = new BigInteger("7339520327860714514013398644733827882176683970668868528312313");
@@ -23,7 +23,7 @@ public class RSA {
     	BigInteger phi = phi(p,q);
     	System.out.println(phi);
     	BigInteger e = new BigInteger("5");
-    	System.out.println(e.modInverse(phi));
+    	System.out.println(e.modInverse(phi));**/
     	//for this number 3367524723136520599574313651967471262880889111291270088046119
     	// factor a 1307632717511110048622297958011
     	// factor b 2575283317739339966230262805829
