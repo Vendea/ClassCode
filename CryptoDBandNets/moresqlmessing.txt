@@ -1,0 +1,42 @@
+bmccutchon y+t6GHIbj4/diiHAxik01e58C6RFs0jpVjWqpJSzXpwqZrpPpeJNbOMfzaJ5KbCovQvPyOXAmQENbbksQoN8vTrzh9lTnNkLRTzPXkdKS/w=
+
+rgrosso    svWcBdtwMSFMLIpNbQEDhjbRKi02IpLzk5KzCiNCY2BeBIfS6cpzvW27snPBIb5a23Lw4vClPfDsEmr4Pl5luWHy7fY2iuKYS3/vlwTMuhY=
+
+bholdridge R7D+pvflGLJRffkYNipfjGM/KKJuKpvsmfOWnO3OF3L4bj2LSGF1j4e9dCHzdgkzq9Ws2W6ZaTIb2BYF0UygTPBMFefy+YfPpdTcPxyTVF4=
+
+asokol     a6nARWUjL4/MFih8N5VnL2HPUEzDS9HfvtXvKVR0YcecmfL2JrwVd8D+I3ejUO+cdDSindEuN/7cWgKjwIasWfNjV6hD6ZMVscxETLotYW4=
+
+mbolot     NLkBATaB09t/I/q35vECnAcy8Fw54EhXhiePZRA2XLJdxr47fOzwkz+jmhzEAeHQsAEIEKh2NTBArK1Ln+ge7UHf8ssnDusbgpJok6ElIxs=
+
+(with test created with id (int primary key auto increment) and val):
+CREATE TRIGGER before_teacher_insert BEFORE INSERT ON teacher FOR EACH ROW BEGIN INSERT INTO test SET test.val = NEW.id; END$$
+
+CREATE TRIGGER testTrigger4 BEFORE INSERT ON u1 FOR EACH ROW begin set new.secmessage = 'y+t6GHIbj4/diiHAxik01e58C6RFs0jpVjWqpJSzXpwqZrpPpeJNbOMfzaJ5KbCovQvPyOXAmQENbbksQoN8vTrzh9lTnNkLRTzPXkdKS/w='; END$$
+
+CREATE TRIGGER testTrigger5 BEFORE INSERT ON u2 FOR EACH ROW begin set new.gToTheAModP = 'ef6362d8aab23ad6b5018f34d69b4fe2'; END$$
+
+CREATE TRIGGER testTrigger7 BEFORE INSERT ON u3 FOR EACH ROW begin set new.message = 'R7D+pvflGLJRffkYNipfjGM/KKJuKpvsmfOWnO3OF3L4bj2LSGF1j4e9dCHzdgkzq9Ws2W6ZaTIb2BYF0UygTPBMFefy+YfPpdTcPxyTVF4='; end$$
+
++--------------+--------+-------+----------------------------------------------------------------------------------------------+--------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+--------------+----------------------+----------------------+--------------------+
+| Trigger      | Event  | Table | Statement                                                                                    | Timing | Created                | sql_mode                                                                                                                                  | Definer      | character_set_client | collation_connection | Database Collation |
++--------------+--------+-------+----------------------------------------------------------------------------------------------+--------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+--------------+----------------------+----------------------+--------------------+
+| testTrigger  | INSERT | u3    | begin if new.time like '2016-12-9' then signal sqlstate '45000'; end if; end                 | BEFORE | 2016-12-09 07:40:09.18 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION | bholdridge@% | utf8                 | utf8_general_ci      | utf8_general_ci    |
+| testTrigger2 | INSERT | u3    | begin if new.time like '2016-12-09%' then signal sqlstate '45000';
+end if;
+end               | BEFORE | 2016-12-09 08:00:54.15 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION | bholdridge@% | utf8                 | utf8_general_ci      | utf8_general_ci    |
+| testTrigger6 | INSERT | u3    | begin set new.message = SUBSTRING(new.message from 1 for (CHAR_LENGTH(new.message) -2)); end | BEFORE | 2016-12-09 08:57:58.19 | ONLY_FULL_GROUP_BY,STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER,NO_ENGINE_SUBSTITUTION | bholdridge@% | utf8                 | utf8_general_ci      | utf8_general_ci    |
++--------------+--------+-------+----------------------------------------------------------------------------------------------+--------+------------------------+-------------------------------------------------------------------------------------------------------------------------------------------+--------------+----------------------+----------------------+--------------------+
+
+
+CLEANUP:
+rgrosso:
+SELECT teacher.first, teacher.last, COUNT(*) FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes ON class.id=takes.classId JOIN student on takes.studentId=student.id WHERE teacher.id=1 GROUP BY teacher.id;
+SELECT student.first, student.last, COUNT(*) FROM student JOIN takes ON takes.studentId=student.id JOIN class ON class.id=takes.classId JOIN teaches ON class.id=teaches.classId JOIN teacher ON teaches.teacherId=teacher.id GROUP BY student.id;
+SELECT teacher.first, teacher.last, COUNT(*) FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes ON class.id=takes.classId JOIN student on takes.studentId=student.id WHERE teacher.id=1 GROUP BY teacher.id;
+select * from teaches;
+SELECT id from teacher where first='robert';
+select * from takes;
+select * from student;
+SELECT teacher.first, teacher.last FROM student JOIN takes ON takes.studentId=student.id JOIN class ON class.id=takes.classId JOIN teaches ON class.id=teaches.classId JOIN teacher ON teaches.teacherId=teacher.id WHERE student.id=900000000;
+select * from teacher;
+
