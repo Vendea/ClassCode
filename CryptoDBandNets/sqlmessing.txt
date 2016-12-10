@@ -1,0 +1,31 @@
+CREATE TABLE student (id INT NOT NULL PRIMARY KEY, first VARCHAR(255) NOT NULL, last VARCHAR(255) NOT NULL, year VARCHAR(255), credits INT, gpa INT);
+
+INSERT INTO student VALUES (900000000, "Jane", "Doe", 0, 32), (900600001, "John", "Doe", 0, 31), (900007002, "Clark", "Kent", 90, 40), (900004003, "Lois", "Lane", 60, 40), (900002004, "Wanda", "Maximoff", 30, 32), (900003705, "Pietro", "Maximoff", 30, 32), (900000123, "Tony", "Stark", 100, 40), (900000045, "Steven", "Rogers", 95, 40), (900000720, "Natasha", "Romanov", 30, 32), (900000010, "Kamala", "Kahn", 30, 32), (900080720, "Clint", "Barton", 35, 22), (900080721, "Jean", "Grey", 80, 40), (900080722, "Leia", "Organa", 20, 40), (900080724, "Luke", "Skywalker", 30, 35), (900080725, "Padme", "Amidala", 55, 38), (900080726, "Obi Wan", "Kenobi", 90, 40), (900080727, "Anakin", "Skywalker", 50, 37), (900080728, "Jyn", "Erso", 27, 28), (900080729, "Poe", "Dameron", 89, 33), (900080730, "Ned", "Stark", 49, 30), (900080723, "Caitlyn", "Tully", 48, 39);
+
+SELECT first, last, teacherId, COUNT(*) FROM teaches INNER JOIN teacher ON teaches.teacherId=teacher.id GROUP BY teaches.teacherId;
+
+SELECT class.name, first, last FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId;
+
+SELECT * FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId;
+
+SELECT * FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes WHERE teacher.id = 1;
+
+SELECT teacher.name, COUNT(*) FROM class JOIN takes ON class.id=takes.classId GROUP BY class.id;
+
+SELECT * FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes ON class.id=takes.classId JOIN student on takes.studentId=student.id;
+
+SELECT teacher.first, teacher.last, COUNT(*) FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes ON class.id=takes.classId JOIN student on takes.studentId=student.id GROUP BY teacher.id;
+
+SELECT teacher.first, teacher.last, COUNT(*) FROM teaches JOIN teacher ON teaches.teacherId=teacher.id JOIN class ON class.id=teaches.classId JOIN takes ON class.id=takes.classId JOIN student on takes.studentId=student.id WHERE teacher.id=1 GROUP BY teacher.id;
+
+6. Count the total number of students in the school
+SELECT COUNT(*) FROM student;
+
+7. Show the number of teachers each student has
+SELECT student.first, student.last, COUNT(*) FROM student JOIN takes ON takes.studentId=student.id JOIN class ON class.id=takes.classId JOIN teaches ON class.id=teaches.classId JOIN teacher ON teaches.teacherId=teacher.id GROUP BY student.id;
+
+8. Show a list of all teachers a particular student has
+SELECT teacher.first, teacher.last FROM student JOIN takes ON takes.studentId=student.id JOIN class ON class.id=takes.classId JOIN teaches ON class.id=teaches.classId JOIN teacher ON teaches.teacherId=teacher.id WHERE student.id=900000000;
+
+9. Create a list of all teachers who teach students that David Bowie teaches - UNFINISHED
+SELECT teacher.first, teacher.last FROM student JOIN takes ON takes.studentId=student.id JOIN class ON class.id=takes.classId JOIN teaches ON class.id=teaches.classId JOIN teacher ON teaches.teacherId=teacher.id WHERE teacher.id=900000000;
