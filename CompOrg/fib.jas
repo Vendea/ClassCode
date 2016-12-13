@@ -1,0 +1,102 @@
+.main
+
+.var
+a
+input
+i
+.end-var
+
+start:	BIPUSH 0x2E
+	NEWARRAY
+	ASTORE a
+	BIPUSH 0x0
+	DUP
+	ALOAD a
+	IASTORE
+	BIPUSH 0x1
+	DUP
+	ALOAD a
+	IASTORE
+
+	INVOKEVIRTUAL getnum
+	ISTORE input
+	ILOAD input
+	IFLT quit
+	ILOAD input
+	IFEQ finish
+	ILOAD input
+	ALOAD a
+	IALOAD
+	BIPUSH 0x2F
+	ISUB
+	IFLT err
+	ILOAD input
+	ALOAD a
+	IALOAD 
+	IFEQ ploop
+	GOTO finish
+
+ploop:	ILOAD input
+	ALOAD a
+	IALOAD
+	IFEQ sloop
+	GOTO finish
+
+sloop:	BIPUSH 0x1
+        ISTORE i
+	GOTO loop
+
+loop:	ILOAD i
+	ILOAD input
+	ISUB
+	ALOAD a
+	IALOAD
+	IFEQ lh1
+	BIPUSH 0x1
+	ILOAD i
+	ILOAD input
+	ISUB
+	ISUB
+	ALOAD a
+	IALOAD
+	ILOAD i
+	ILOAD input
+	ISUB
+	ALOAD a
+	IALOAD
+	IADD
+	BIPUSH 0x1
+	ILOAD i
+	ILOAD input
+	ISUB
+	IADD
+	ALOAD a
+	IASTORE
+	ILOAD i
+	ILOAD input
+	ISUB
+	ILOAD input
+	IF_ICMPEQ finish
+	GOTO lh2
+
+lh1:	IINC i 0x1
+	GOTO loop
+
+lh2:	BIPUSH 0x1
+	ILOAD i
+	ISUB
+	ISTORE i
+	GOTO loop
+	
+err:	BIPUSH 0xFFFFFFFF
+	INVOKEVIRTUAL print
+	GOTO quit	
+ 
+finish:	ILOAD input
+	ALOAD a
+	IALOAD
+	INVOKEVIRTUAL print
+	
+quit: 	HALT
+
+.end-main
