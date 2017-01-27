@@ -4,36 +4,32 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-void reverse(char* word);
-int str_len(char* word);
-#define BUFSZ 100
+void reverse(char* word, int length);
+//int str_len(char* word);
+#define BUFSZ 1
 
 int main(){
-	char buf[BUFSZ];
+	char buf;
 	int fd;
 	int nchar;
-
 	if((fd = open("/usr/share/dict/american-english", O_RDONLY)) != -1){
 	
-		while(1){
-			char temp[BUFSZ];
-			if((nchar = read(fd, buf, BUFSZ-1)) < BUFSZ-1){
-				int i = 0;
-				while(i < nchar){
-					int step = 0;
-					while( *(buf+i) != '\n'){
-						temp[step] = buf[i];
-						step++;
-						i++;
-					}
-					temp[step] = '\0';
-					
-				}
-				printf("%s\n", buf);
-				break;
+		char toread[128];
+		char toprint[128];
+		int count = 0;
+		while((nchar = read(fd, &buf, BUFSZ)) > 0){
+			if(buf != '\n'){
+				toread[count] = buf;
+				count++;
 			}
-			buf[BUFSZ-1] = '\0';
-			printf("%s\n", buf);
+			else{
+				for(int i = 0; i < count; i++){
+					toprint[i] = toread[count-(i+1)];
+				}
+				toprint[count] = '\0';
+				printf("%s\n", toprint);
+				count = 0;
+			}
 		}
 	}
 	else {
@@ -41,14 +37,21 @@ int main(){
 	}
 }
 
-void reverse(char* word){
-	
-}
+void reverse(char* word, int length){
+	char *begin, *end, temp;
+	begin = word;
+	end = word;
 
-int str_len(char* word){
-	int c = 0;
-	while( *(word+c) != '\0'){
-		c++;
+	for(int i = 0; i < length-1; i++){
+		end++;
 	}
-	return c;
+	
+	for(int i = 0; i < length/2; i++){
+		temp = *end;
+		*end = *begin;
+		*begin = temp;
+		begin++;
+		end--;
+	}
+	word[length] = '\0';
 }
