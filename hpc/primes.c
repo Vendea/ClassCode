@@ -65,10 +65,19 @@ int main(int c, char* argv[]){
 
   // Initialize the queue semaphores
   // Your work here...
+  sem_init(&queue0.spaceSem, 0, queueSize); 
+  sem_init(&queue0.itemsSem, 0, 0);
+  sem_init(&queue1.spaceSem, 0, queueSize); 
+  sem_init(&queue1.itemsSem, 0, 0);
+  sem_init(&queue2.spaceSem, 0, queueSize);
+  sem_init(&queue2.itemsSem, 0, 0);
   printf("Initialized semaphores\n");
 
   // Initialize the queue mutexes
   // Your work here...
+  pthread_mutex_init(&queue0.mutex, NULL);
+  pthread_mutex_init(&queue1.mutex, NULL);
+  pthread_mutex_init(&queue2.mutex, NULL);
   printf("Initialized mutexes\n");
 
   // Launch the threads
@@ -87,6 +96,9 @@ int main(int c, char* argv[]){
 
   // Join the child threads
   // Your work here...
+  pthread_join(intsT, NULL);
+  pthread_join(primesT, NULL);
+  pthread_join(foursT, NULL); 
 
   return 0;
 }
@@ -112,11 +124,13 @@ void* addInts(void* N){
  * that are prime onto queue1.
  */
 void* findPrimes(void* s){
+  int x;
   do {
     x = getItem(&queue0); 
-    // Your work here...
+    if(isPrime(x)){
+      addItem(&queue1, x);
+    }
   } while(x != -1);
-
   addItem(&queue1, -1);
   printf("findPrimes done\n");
 }
@@ -128,7 +142,14 @@ void* findPrimes(void* s){
  * that require four squares onto queue2
  */
 void* findFourSquares(void* s){
-  // Your work here...
+  int x;
+  do{
+    x = getItem(&queue1);
+    if(minNumSquares(x) == 4){
+      addItem(&queue2, x);
+    }
+  } while(x != -1);
+  addItem(&queue2, -1);
 }
 
 
@@ -144,8 +165,12 @@ void* findFourSquares(void* s){
  *   items semaphore to announce that there is another in the queue.
  */
 void addItem(queue* q, int x){
-  // Your work here...
-
+  sem_wait(&q->spaceSem);
+  pthread_mutex_lock(&q->mutex);
+  q->items[q->count] = x;
+  q->count = (q->count + 1)%queueSize;
+  pthread_mutex_unlock(&q->mutex);
+  sem_post(&q->itemsSem);
 }
 
 
@@ -161,8 +186,15 @@ void addItem(queue* q, int x){
  *   spaces semaphore to announce that there is another open space.
  */
 int getItem(queue* q){
-  // Your work here...
-
+  int x;
+  sem_wait(&q->itemsSem);
+  pthread_mutex_lock(&q->mutex);
+  x = q->items[q->locOfFirst];
+  q->locOfFirst = (q->locOfFirst+1)%queueSize;
+  q->count = (q->count-1)%queueSize;
+  pthread_mutex_unlock(&q->mutex);
+  sem_post(&q->spaceSem);
+  return x;
 }
 
 
