@@ -191,7 +191,6 @@ int getItem(queue* q){
   pthread_mutex_lock(&q->mutex);
   x = q->items[q->locOfFirst];
   q->locOfFirst = (q->locOfFirst+1)%queueSize;
-  q->count = (q->count-1)%queueSize;
   pthread_mutex_unlock(&q->mutex);
   sem_post(&q->spaceSem);
   return x;
