@@ -50,5 +50,18 @@ int main(int argc, char *argv[]){
         }
     }
 
+    int posn = optind;
+    do{
+        if(posn == argc){
+            process_stdin();
+        }
+        if(argv[posn] == '-'){
+            process_stdin();
+        }
+        else{
+            process_file(argv[posn]);
+        }
+        posn++;
+    } while(posn < argc)
 }
 
