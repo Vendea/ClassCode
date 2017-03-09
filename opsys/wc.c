@@ -65,3 +65,8 @@ int main(int argc, char *argv[]){
     } while(posn < argc)
 }
 
+void process_stdin(){
+    while(!feof(stdin)){
+        
+    }
+}
