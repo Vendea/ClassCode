@@ -166,61 +166,60 @@ int main(int argc, char *argv[]){
             if(*(files[posn]) == '-'){
                 fd = 0;
             }
-            else{
-                if((fd = open(files[posn], O_RDONLY)) < 0){
-                    if(errno == EMFILE || errno == ENFILE){
-                        sleep(1);
-                        continue;
-                    }
-                    fprintf(stderr, "%s: %s: %s\n", progname, argv[posn], strerror(errno));
-                    files[posn] = '\0';
-                    posn = posn + 1;
-                    continue;
-                }
-
-                int fifo[2];
-                if(pipe(fifo) < 0) {
-                    close(fd);
+            else if((fd = open(files[posn], O_RDONLY)) < 0){
+                if(errno == EMFILE || errno == ENFILE){
                     sleep(1);
                     continue;
                 }
-
-                int pid;
-                if((pid = fork()) < 0){
-                    close(fd);
-                    close(fifo[0]);
-                    close(fifo[1]);
-                    sleep(1);
-                    continue;
-                }
-
-                if(pid == 0){
-                    //we're a child
-                    close(fifo[0]);
-                    count_parts *res = count(fd);
-                    close(fd);
-
-                    if(write(fifo[1], &res, sizeof(count_parts)) != sizeof(count_parts)){
-                        close(fifo[1]);
-                        exit(EXIT_FAILURE);
-                    }
-                    close(fifo[1]);
-                    exit(EXIT_SUCCESS);
-                }
-
-                //else we're a parent
-                close(fifo[1]);
-
-                procinfo *new = (procinfo *) malloc(sizeof(procinfo));
-                new->pid = pid;
-                new->fdout = fifo[0];
-                new->fileno = posn;
-                new->next = plist;
-                plist = new;
-                nchild = nchild + 1;
+                fprintf(stderr, "%s: %s: %s\n", progname, argv[posn], strerror(errno));
+                files[posn] = '\0';
                 posn = posn + 1;
+                continue;
             }
+
+            int fifo[2];
+            if(pipe(fifo) < 0) {
+                close(fd);
+                sleep(1);
+                continue;
+            }
+
+            int pid;
+            if((pid = fork()) < 0){
+                close(fd);
+                close(fifo[0]);
+                close(fifo[1]);
+                sleep(1);
+                continue;
+            }
+
+            if(pid == 0){
+                //we're a child
+                close(fifo[0]);
+                count_parts *res = count(fd);
+                close(fd);
+
+                if(write(fifo[1], &res, sizeof(count_parts)) != sizeof(count_parts)){
+                    close(fifo[1]);
+                    exit(EXIT_FAILURE);
+                }
+                close(fifo[1]);
+                exit(EXIT_SUCCESS);
+            }
+
+            //else we're a parent
+            close(fifo[1]);
+
+            procinfo *new = (procinfo *) malloc(sizeof(procinfo));
+            new->pid = pid;
+            new->fdout = fifo[0];
+            new->fileno = posn;
+            new->next = plist;
+            plist = new;
+            nchild = nchild + 1;
+            posn = posn + 1;
         }
+
         if(total_flag){
             for(int i = 0; i < nfiles; i++){
                 if(files[i][0] != '\0'){
@@ -287,7 +286,6 @@ count_parts* readCount(int status, int fd){
     }
 
     close(fd);
-    free((void *) empty);
     return retval;
 }
 
@@ -314,9 +312,6 @@ void print_stuff(long lines, long words, long bytes, char* fname){
         snprintf(pbytes, sizeof(long), "%li", bytes);
     }
     printf("     %s     %s     %s %s\n", plines, pwords, pbytes, fname);
-    free((void *) plines);
-    free((void *) pwords);
-    free((void *) pbytes);
 }
 
 void usage(){
