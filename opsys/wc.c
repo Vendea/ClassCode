@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
             if(pipe(fifo) < 0) {
                 close(fd);
                 sleep(1);
-                continue;
+                continue;//die
             }
 
             int pid;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]){
                 close(fifo[0]);
                 close(fifo[1]);
                 sleep(1);
-                continue;
+                continue;//die
             }
 
             if(pid == 0){
@@ -281,7 +281,7 @@ count_parts* readCount(int status, int fd){
     if(status != EXIT_SUCCESS){
         retval = empty;
     }
-    else if(read(fd, &retval, sizeof(count_parts)) != sizeof(count_parts)){
+    else if(read(fd, retval, sizeof(count_parts)) != sizeof(count_parts)){
         retval = empty;
     }
 
