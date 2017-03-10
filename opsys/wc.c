@@ -43,8 +43,9 @@ typedef struct procinfo{
 char *progname;
 
 void usage();
-count_parts process_file(char* fname);
-void print_stuff(char* lines, char* words, char* bytes, char* fname);
+count_parts* count(int fd);
+count_parts* readCount(int status, int fd);
+void print_stuff(long lines, long words, long bytes, char* fname);
 
 int main(int argc, char *argv[]){
     progname = argv[0];
@@ -57,7 +58,9 @@ int main(int argc, char *argv[]){
 
     while(1){
         int option_index = 0;
-        c = getopt_long(argc, argv, "n:wlc", long_options, &option_index);
+        int c = getopt_long(argc, argv, "n:wlc", long_options, &option_index);
+        char *endptr;
+        long tproc;
 
         if(c == -1){
             break;
@@ -77,8 +80,7 @@ int main(int argc, char *argv[]){
             break;
 
         case 'n':
-            char *endptr;
-            long tproc = strtol(optarg, &endptr, 0);
+            tproc = strtol(optarg, &endptr, 0);
             if(*endptr != '\0' || tproc < 1){
                 usage();
             }
@@ -91,6 +93,11 @@ int main(int argc, char *argv[]){
         }
     }
 
+    count_parts *total = (count_parts *) malloc(sizeof(count_parts));
+    total->lines = 0;
+    total->words = 0;
+    total->bytes = 0;
+    char *t_fname = "total\0";
     int posn = 0;
     int nfiles = argc - optind;
     int fd;
@@ -99,15 +106,15 @@ int main(int argc, char *argv[]){
     if(nfiles == 0){
         count_parts *res = count(0);
         print_stuff(res->lines, res->words, res->bytes, stdin_fname);
-        exit(EXIT_SUCESS);
+        exit(EXIT_SUCCESS);
     }
-    else if(nfiles > 1){
+    if(nfiles > 1){
         total_flag = 1;
     }
 
     procinfo *plist = NULL;
     int nchild = 0;
-    count_parts ind_counts[nfiles];
+    count_parts* ind_counts[nfiles];
     for(int i = 0; i < nfiles; i++){
         ind_counts[i] = (count_parts *) malloc(sizeof(count_parts));
     }
@@ -124,14 +131,39 @@ int main(int argc, char *argv[]){
             }
 
             if(plist->pid == cpid){
-                ind_counts[plist->fileno] = //help
+                ind_counts[plist->fileno] = readCount(status, plist->fdout);
+
+                void *hold = plist;
+                plist = plist->next;
+                free(hold);
+                nchild = nchild - 1;
+                continue;
+            }
+
+            procinfo *last = plist, *this = plist->next;
+            while(this != NULL){
+                if(this->pid == cpid){
+                    ind_counts[this->fileno] = readCount(status, this->fdout);
+                    last->next = this->next;
+                    nchild = nchild - 1;
+
+                    free((void *) this);
+                    this = last;
+                    break;
+                }
+                last = this;
+                this = this->next;
+            }
+            if(this == NULL){
+                fprintf(stderr, "%s: Child exited with no record\n", progname);
+                exit(EXIT_FAILURE);
             }
         }
 
         //try to start child process
         if(nchild < nproc && posn < nfiles){
             int fd;
-            if(files[posn] == '-'){
+            if(*(files[posn]) == '-'){
                 fd = 0;
             }
             else{
@@ -178,12 +210,34 @@ int main(int argc, char *argv[]){
 
                 //else we're a parent
                 close(fifo[1]);
+
+                procinfo *new = (procinfo *) malloc(sizeof(procinfo));
+                new->pid = pid;
+                new->fdout = fifo[0];
+                new->fileno = posn;
+                new->next = plist;
+                plist = new;
+                nchild = nchild + 1;
+                posn = posn + 1;
             }
-        posn++;
+        }
+        if(total_flag){
+            for(int i = 0; i < nfiles; i++){
+                if(files[i][0] != '\0'){
+                    total->lines = total->lines + ind_counts[i]->lines;
+                    total->words = total->words + ind_counts[i]->words;
+                    total->bytes = total->bytes + ind_counts[i]->bytes;
+                }
+            }
+        }
     }
+    if(total_flag){
+        print_stuff(total->lines, total->words, total->bytes, t_fname);
+    }
+    exit(EXIT_SUCCESS);
 }
 
-count_parts count(int fd){
+count_parts* count(int fd){
     char buf[BUFSIZE +1];
     long lcount = 0;
     long wcount = 0;
@@ -210,43 +264,59 @@ count_parts count(int fd){
             *p++;
         }
     }
-    count_parts *ret = (count_parts *) malloc(sizof(count_parts));
+    count_parts *ret = (count_parts *) malloc(sizeof(count_parts));
     ret->lines = lcount;
     ret->words = wcount;
     ret->bytes = bcount;
-    return *ret;
+    return ret;
+}
+
+count_parts* readCount(int status, int fd){
+    count_parts *empty = (count_parts *) malloc(sizeof(count_parts));
+    empty->lines = 0;
+    empty->words = 0;
+    empty->bytes = 0;
+
+    count_parts *retval = empty;
+
+    if(status != EXIT_SUCCESS){
+        retval = empty;
+    }
+    else if(read(fd, &retval, sizeof(count_parts)) != sizeof(count_parts)){
+        retval = empty;
+    }
+
+    close(fd);
+    free((void *) empty);
+    return retval;
 }
 
 void print_stuff(long lines, long words, long bytes, char* fname){
     char *plines = (char *) malloc(sizeof(long));
     char *pwords = (char *) malloc(sizeof(long));
     char *pbytes = (char *) malloc(sizeof(long));
-    char *tmp = (char *) malloc(sizeof(long));
     int numFlags = 0;
     if(lines_flag){
-        snprintf(tmp, "%li", lines);
-        plines = tmp;
+        snprintf(plines, sizeof(long), "%li", lines);
         numFlags++;
     }
     if(words_flag){
-        snprintf(tmp, "%li", words);
-        pwords = tmp;
+        snprintf(pwords, sizeof(long), "%li", words);
         numFlags++;
     }
     if(bytes_flag){
-        snprintf(tmp, "%li", bytes);
-        pbytes = tmp;
+        snprintf(pbytes, sizeof(long), "%li", bytes);
         numFlags++;
     }
     if(0 == numFlags){
-        snprintf(tmp, "%li", lines);
-        plines = tmp;
-        snprintf(tmp, "%li", words);
-        pwords = tmp;
-        snprintf(tmp, "%li", bytes);
-        pbytes = tmp;
+        snprintf(plines, sizeof(long), "%li", lines);
+        snprintf(pwords, sizeof(long), "%li", words);
+        snprintf(pbytes, sizeof(long), "%li", bytes);
     }
-    fprintf("\n     %s     %s     %s %s\n", plines, pwords, pbytes, fname);
+    printf("     %s     %s     %s %s\n", plines, pwords, pbytes, fname);
+    free((void *) plines);
+    free((void *) pwords);
+    free((void *) pbytes);
 }
 
 void usage(){
