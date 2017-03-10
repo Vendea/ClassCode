@@ -91,10 +91,11 @@ int main(int argc, char *argv[]){
         }
     }
 
-    int posn = optind;
+    int posn = 0;
     int nfiles = argc - optind;
     int fd;
     char *stdin_fname = "-\0";
+    char **files = &(argv[optind]);
     if(nfiles == 0){
         count_parts *res = count(0);
         print_stuff(res->lines, res->words, res->bytes, stdin_fname);
@@ -111,8 +112,10 @@ int main(int argc, char *argv[]){
         ind_counts[i] = (count_parts *) malloc(sizeof(count_parts));
     }
 
-    while(posn < argc || nchild > 0){
+    //deal with parent
+    while(posn < nfiles || nchild > 0){
 
+        //try to harvest children
         int cpid, status;
         while((cpid = waitpid(-1, &status, WNOHANG)) > 0){
             if(plist == NULL){
@@ -125,13 +128,57 @@ int main(int argc, char *argv[]){
             }
         }
 
-        if(nchild < nproc && 
-        if(argv[posn] == '-'){
-            fd = 0;
-        }
-        else{
-            process_file(argv[posn]);
-        }
+        //try to start child process
+        if(nchild < nproc && posn < nfiles){
+            int fd;
+            if(files[posn] == '-'){
+                fd = 0;
+            }
+            else{
+                if((fd = open(files[posn], O_RDONLY)) < 0){
+                    if(errno == EMFILE || errno == ENFILE){
+                        sleep(1);
+                        continue;
+                    }
+                    fprintf(stderr, "%s: %s: %s\n", progname, argv[posn], strerror(errno));
+                    files[posn] = '\0';
+                    posn = posn + 1;
+                    continue;
+                }
+
+                int fifo[2];
+                if(pipe(fifo) < 0) {
+                    close(fd);
+                    sleep(1);
+                    continue;
+                }
+
+                int pid;
+                if((pid = fork()) < 0){
+                    close(fd);
+                    close(fifo[0]);
+                    close(fifo[1]);
+                    sleep(1);
+                    continue;
+                }
+
+                if(pid == 0){
+                    //we're a child
+                    close(fifo[0]);
+                    count_parts *res = count(fd);
+                    close(fd);
+
+                    if(write(fifo[1], &res, sizeof(count_parts)) != sizeof(count_parts)){
+                        close(fifo[1]);
+                        exit(EXIT_FAILURE);
+                    }
+                    close(fifo[1]);
+                    exit(EXIT_SUCCESS);
+                }
+
+                //else we're a parent
+                close(fifo[1]);
+            }
         posn++;
     }
 }
