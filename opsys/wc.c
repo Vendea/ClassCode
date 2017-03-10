@@ -43,7 +43,6 @@ typedef struct procinfo{
 char *progname;
 
 void usage();
-void process_stdin();
 count_parts process_file(char* fname);
 void print_stuff(char* lines, char* words, char* bytes, char* fname);
 
@@ -94,34 +93,47 @@ int main(int argc, char *argv[]){
 
     int posn = optind;
     int nfiles = argc - optind;
+    int fd;
+    char *stdin_fname = "-\0";
     if(nfiles == 0){
-        process_stdin();
-        print_stuff(
+        count_parts *res = count(0);
+        print_stuff(res->lines, res->words, res->bytes, stdin_fname);
+        exit(EXIT_SUCESS);
     }
     else if(nfiles > 1){
         total_flag = 1;
     }
-    if(argv[posn] == '-'){
-        process_stdin();
-    }
-    else{
-        process_file(argv[posn]);
-    }
-    while(posn < argc && nchild < )
-    posn++;
-}
 
-void process_stdin(){
-    while(!feof(stdin)){
-        
+    procinfo *plist = NULL;
+    int nchild = 0;
+    count_parts ind_counts[nfiles];
+    for(int i = 0; i < nfiles; i++){
+        ind_counts[i] = (count_parts *) malloc(sizeof(count_parts));
     }
-}
 
-count_parts process_file(char* fname){
-    //get fd here and pass to count
-    //count_parts res = count
-    //then print
-    //print_stuff(res->lines, res->words, res->bytes, fname);
+    while(posn < argc || nchild > 0){
+
+        int cpid, status;
+        while((cpid = waitpid(-1, &status, WNOHANG)) > 0){
+            if(plist == NULL){
+                fprintf(stderr, "%s: Child died, no children on list\n", progname);
+                continue;
+            }
+
+            if(plist->pid == cpid){
+                ind_counts[plist->fileno] = //help
+            }
+        }
+
+        if(nchild < nproc && 
+        if(argv[posn] == '-'){
+            fd = 0;
+        }
+        else{
+            process_file(argv[posn]);
+        }
+        posn++;
+    }
 }
 
 count_parts count(int fd){
@@ -143,7 +155,7 @@ count_parts count(int fd){
             if(*p == '\n'){
                 lcount ++;
             }
-            if(isspace(*p) && (isalpha(prev) || isdigit(prev))){
+            if(isspace(*p) && !isspace(prev)){
                 wcount++;
             }
             bcount += sizeof(char);
@@ -159,10 +171,10 @@ count_parts count(int fd){
 }
 
 void print_stuff(long lines, long words, long bytes, char* fname){
-    char plines[128];
-    char pwords[128];
-    char pbytes[128];
-    char tmp[128];
+    char *plines = (char *) malloc(sizeof(long));
+    char *pwords = (char *) malloc(sizeof(long));
+    char *pbytes = (char *) malloc(sizeof(long));
+    char *tmp = (char *) malloc(sizeof(long));
     int numFlags = 0;
     if(lines_flag){
         snprintf(tmp, "%li", lines);
