@@ -163,7 +163,7 @@ int main(int argc, char *argv[]){
         //try to start child process
         if(nchild < nproc && posn < nfiles){
             int fd;
-            if(*(files[posn]) == '-'){
+            if(files[posn][0] == '-'){
                 fd = 0;
             }
             else if((fd = open(files[posn], O_RDONLY)) < 0){
@@ -181,7 +181,7 @@ int main(int argc, char *argv[]){
             if(pipe(fifo) < 0) {
                 close(fd);
                 sleep(1);
-                continue;//die
+                exit(EXIT_FAILURE);
             }
 
             int pid;
@@ -190,7 +190,7 @@ int main(int argc, char *argv[]){
                 close(fifo[0]);
                 close(fifo[1]);
                 sleep(1);
-                continue;//die
+                exit(EXIT_FAILURE);
             }
 
             if(pid == 0){
@@ -198,8 +198,9 @@ int main(int argc, char *argv[]){
                 close(fifo[0]);
                 count_parts *res = count(fd);
                 close(fd);
+                print_stuff(res->lines, res->words, res->bytes, files[posn]);
 
-                if(write(fifo[1], &res, sizeof(count_parts)) != sizeof(count_parts)){
+                if(write(fifo[1], res, sizeof(count_parts)) != sizeof(count_parts)){
                     close(fifo[1]);
                     exit(EXIT_FAILURE);
                 }
@@ -219,18 +220,16 @@ int main(int argc, char *argv[]){
             nchild = nchild + 1;
             posn = posn + 1;
         }
+    }
 
-        if(total_flag){
-            for(int i = 0; i < nfiles; i++){
-                if(files[i][0] != '\0'){
-                    total->lines = total->lines + ind_counts[i]->lines;
-                    total->words = total->words + ind_counts[i]->words;
-                    total->bytes = total->bytes + ind_counts[i]->bytes;
-                }
+    if(total_flag){
+        for(int i = 0; i < nfiles; i++){
+            if(files[i][0] != '\0'){
+                total->lines = total->lines + ind_counts[i]->lines;
+                total->words = total->words + ind_counts[i]->words;
+                total->bytes = total->bytes + ind_counts[i]->bytes;
             }
         }
-    }
-    if(total_flag){
         print_stuff(total->lines, total->words, total->bytes, t_fname);
     }
     exit(EXIT_SUCCESS);
@@ -262,6 +261,9 @@ count_parts* count(int fd){
             prev = *p;
             *p++;
         }
+    }
+    if(!isspace(prev)){
+        wcount = wcount +1;
     }
     count_parts *ret = (count_parts *) malloc(sizeof(count_parts));
     ret->lines = lcount;
