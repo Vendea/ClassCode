@@ -30,10 +30,10 @@ int* a;
 
   // Allocate space on the GPU
   int* d_Array;			/* d_ means "device" */
-  int d_answer;
+  int* d_answer;
   err = cudaMalloc(&d_Array, N * sizeof(int));
   printf("Malloc device rules: %s\n",cudaGetErrorString(err));
-  err = cudaMalloc(&d_answer, sizeof(int));
+  err = cudaMalloc(&d_answer, sizeof(long));
   printf("Malloc device rules: %s\n",cudaGetErrorString(err));
 
 
@@ -48,14 +48,14 @@ int* a;
   dim3 dimBlock(blockSize);
 
   // Launch the kernel
-  add <<< dimGrid, dimBlock >>> (d_Array, d_answer);
+  add <<< dimGrid, dimBlock >>> (d_Array, *d_answer);
 
   // Retrieve the results from the card
   int answer;
   cudaMemcpy(&answer, d_answer, sizeof(int), cudaMemcpyDeviceToHost);
 
   // Inspect the results.
-  print answer;
+  printf("%d\n", answer);
 }
 
 void printArray(int k){
@@ -85,5 +85,6 @@ __global__ void add(int d_a[], int d_answer){
   }
   d_answer = a[threadIdx.x];
 }
+
 
 
