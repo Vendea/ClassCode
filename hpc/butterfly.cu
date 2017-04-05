@@ -2,10 +2,13 @@
 #include <cuda.h>
 
 // Forward Declarations
+#define BLOCKSIZE 1024
+
 void printArray(int k);
-__global__ void add(int d_a[], int d_answer);
+__global__ void add(int d_a[], int *d_answer);
 
 int* a;
+int answer;
 
  int main(){
    cudaError_t err;
@@ -24,7 +27,7 @@ int* a;
   // Fill the array
   int i;			/* counter */
   for(i = 0; i < N; i++)
-    a[i] = rand() % 21;
+    a[i] = rand() % 23;
 
   printArray(20);
 
@@ -37,25 +40,31 @@ int* a;
   printf("Malloc device rules: %s\n",cudaGetErrorString(err));
 
 
-  // Copy the aray to the card
+  // Copy the array to the card
   // destination, then source
-  cudaMemcpy(d_Array, a, N * sizeof(int), cudaMemcpyHostToDevice);
+  err = cudaMemcpy(d_Array, a, N * sizeof(int), cudaMemcpyHostToDevice);
+  printf("cuda memory error: %s\n",cudaGetErrorString(err));
+  err = cudaMemcpy(d_answer, &answer, sizeof(int), cudaMemcpyHostToDevice);
+  printf("cuda memory error: %s\n",cudaGetErrorString(err));
 
   // Set up the kernel
-  int blockSize = 1024;
+  int blockSize = BLOCKSIZE;
   int numBlocks = 1;
   dim3 dimGrid(numBlocks);
   dim3 dimBlock(blockSize);
 
   // Launch the kernel
-  add <<< dimGrid, dimBlock >>> (d_Array, *d_answer);
+  add <<< dimGrid, dimBlock >>> (d_Array, d_answer);
 
   // Retrieve the results from the card
-  int answer;
-  cudaMemcpy(&answer, d_answer, sizeof(int), cudaMemcpyDeviceToHost);
+  err = cudaMemcpy(&answer, d_answer, sizeof(int), cudaMemcpyDeviceToHost);
+  printf("cuda memory error: %s\n",cudaGetErrorString(err));
+  err = cudaMemcpy(a, d_Array, N*sizeof(int), cudaMemcpyDeviceToHost);
+  printf("cuda memory error: %s\n",cudaGetErrorString(err));
 
   // Inspect the results.
-  printf("%d\n", answer);
+  printf("%i\n", answer);
+  printArray(20);
 }
 
 void printArray(int k){
@@ -66,14 +75,13 @@ void printArray(int k){
 }
 
 
-__global__ void add(int d_a[], int d_answer){
-  __shared__ int a[blockDim.x];
-  __shared__ int sum;
+__global__ void add(int d_a[], int *d_answer){
+  __shared__ int a[BLOCKSIZE];
 
   a[threadIdx.x] = d_a[threadIdx.x];
   __syncthreads();
 
-  for (int i = 0; i < log(blockDim.x) / log(2); i++){
+  for (int i = 0; i < log2f(blockDim.x); i++){
     int idx = threadIdx.x;
     int neighbor = idx ^ (1<<i);
     int his = a[neighbor];
@@ -83,8 +91,5 @@ __global__ void add(int d_a[], int d_answer){
     a[idx] = holder;
     __syncthreads();
   }
-  d_answer = a[threadIdx.x];
+  *d_answer = a[threadIdx.x];
 }
-
-
-

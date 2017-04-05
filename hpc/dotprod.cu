@@ -67,7 +67,7 @@ int main(){
   printf("Memory copy error: %s\n", cudaGetErrorString(err));
 
   // Inspect the results.
-  printf("dot product result: %s\n", result);
+  printf("dot product result: %f\n", *result);
 
 }
 
